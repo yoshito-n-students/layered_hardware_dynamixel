@@ -23,7 +23,7 @@ public:
     // nothing to do
   }
 
-  virtual void stoping() {
+  virtual void stopping() {
     // nothing to do
   }
 };

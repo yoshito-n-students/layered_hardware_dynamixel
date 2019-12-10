@@ -16,7 +16,7 @@ public:
 
   virtual void write(const ros::Time &time, const ros::Duration &period) = 0;
 
-  virtual void stoping() = 0;
+  virtual void stopping() = 0;
 };
 
 typedef boost::shared_ptr< ActuatorOperatingModeBase > ActuatorOperatingModePtr;
