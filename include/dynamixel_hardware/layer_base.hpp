@@ -18,7 +18,7 @@ public:
                     const std::string &urdf_str) = 0;
 
   virtual void doSwitch(const std::list< hardware_interface::ControllerInfo > &start_list,
-                        const std::list< hardware_interface::ControllerInfo > &stop_list) {}
+                        const std::list< hardware_interface::ControllerInfo > &stop_list) = 0;
 
   virtual void read(const ros::Time &time, const ros::Duration &period) = 0;
 
