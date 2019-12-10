@@ -61,7 +61,7 @@ public:
 
     // init actuators with param "actuators/<actuator_name>"
     BOOST_FOREACH (const XmlRpc::XmlRpcValue::ValueStruct::value_type &ator_param, ators_param) {
-      ActuatorPtr ator(new Actuator(device_));
+      ActuatorPtr ator(new Actuator(ator_param.first, device_));
       ros::NodeHandle ator_param_nh(param_nh, ros::names::append("actuators", ator_param.first));
       if (!ator->init(hw, ator_param_nh)) {
         return false;
