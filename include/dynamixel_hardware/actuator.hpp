@@ -2,10 +2,12 @@
 #define DYNAMIXEL_HARDWARE_ACTUATOR_HPP
 
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 
 #include <dynamixel_hardware/actuator_monitor_mode.hpp>
+#include <dynamixel_hardware/actuator_null_mode.hpp>
 #include <dynamixel_hardware/actuator_operating_mode_base.hpp>
 #include <dynamixel_hardware/actuator_position_mode.hpp>
 #include <dynamixel_hardware/actuator_reset_mode.hpp>
@@ -27,6 +29,7 @@
 #include <dynamixel/protocols/protocol2.hpp>
 #include <dynamixel/servos/base_servo.hpp>
 
+#include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -72,20 +75,33 @@ public:
 
     // TODO: init actuator based on params
 
-    mode_ = dynamixel::OperatingMode::unknown;
+    present_mode_ = boost::make_shared< ActuatorNullMode >();
   }
 
-  void doSwitch(const std::list< hardware_interface::ControllerInfo > &start_list,
-                const std::list< hardware_interface::ControllerInfo > &stop_list) {
-    // TODO: switch actuator's operating modes according to starting/stopping controllers
+  void doSwitch(const std::list< hardware_interface::ControllerInfo > &starting_controller_list,
+                const std::list< hardware_interface::ControllerInfo > &stopping_controller_list) {
+    // switch actuator's operating modes according to starting controllers
+    BOOST_FOREACH (const hardware_interface::ControllerInfo &starting_controller,
+                   starting_controller_list) {
+      // find mode to switch
+      const std::map< std::string, ActuatorOperatingModePtr >::const_iterator mode_to_switch(
+          mode_map_.find(starting_controller.name));
+      if (mode_to_switch == mode_map_.end()) {
+        continue;
+      }
+      // switch modes
+      present_mode_->stopping();
+      present_mode_ = mode_to_switch->second;
+      present_mode_->starting();
+    }
   }
 
   void read(const ros::Time &time, const ros::Duration &period) {
-    // TODO: read states from the actuator
+    present_mode_->read(time, period);
   }
 
   void write(const ros::Time &time, const ros::Duration &period) {
-    // TODO: write commands to the actuator
+    present_mode_->write(time, period);
   }
 
 private:
@@ -116,6 +132,8 @@ private:
                                                                    &vel_cmd_, &eff_cmd_);
     } else if (mode_str == "reset") {
       return boost::make_shared< ActuatorResetMode >();
+    } else if (mode_str == "null") {
+      return boost::make_shared< ActuatorNullMode >();
     }
     return ActuatorOperatingModePtr();
   }
@@ -124,13 +142,14 @@ private:
   const std::string name_;
   dynamixel::controllers::Usb2Dynamixel &device_;
   std::shared_ptr< dynamixel::servos::BaseServo< dynamixel::protocols::Protocol2 > > servo_;
+  std::map< std::string, ActuatorOperatingModePtr > mode_map_;
+  ActuatorOperatingModePtr present_mode_;
 
   // params
   dynamixel::protocols::Protocol2::id_t id_;
   double torque_constant_;
 
   // states
-  dynamixel::OperatingMode mode_;
   double pos_, vel_, eff_;
 
   // commands
