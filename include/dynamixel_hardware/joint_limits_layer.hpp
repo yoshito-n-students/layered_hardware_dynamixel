@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 
+#include <dynamixel_hardware/common_namespaces.hpp>
 #include <dynamixel_hardware/layer_base.hpp>
 #include <hardware_interface/controller_info.h>
 #include <hardware_interface/robot_hw.h>
@@ -23,8 +24,7 @@ namespace dynamixel_hardware {
 
 class JointLimitsLayer : public LayerBase {
 public:
-  virtual bool init(hardware_interface::RobotHW &hw, ros::NodeHandle &param_nh,
-                    const std::string &urdf_str) {
+  virtual bool init(hi::RobotHW &hw, ros::NodeHandle &param_nh, const std::string &urdf_str) {
     // register joint limit interfaces to the hardware so that other layers can find the interfaces
     hw.registerInterface(&pos_iface_);
     hw.registerInterface(&vel_iface_);
@@ -40,19 +40,16 @@ public:
     // associate joints already registered in the joint interface of the hardware
     // and joint limits loaded from the URDF.
     // associated pairs will be stored in the limits interface.
-    tieJointsAndLimits< hardware_interface::PositionJointInterface,
-                        joint_limits_interface::PositionJointSaturationHandle >(hw, urdf_model,
-                                                                                pos_iface_);
-    tieJointsAndLimits< hardware_interface::VelocityJointInterface,
-                        joint_limits_interface::VelocityJointSaturationHandle >(hw, urdf_model,
-                                                                                vel_iface_);
-    tieJointsAndLimits< hardware_interface::EffortJointInterface,
-                        joint_limits_interface::EffortJointSaturationHandle >(hw, urdf_model,
-                                                                              eff_iface_);
+    tieJointsAndLimits< hi::PositionJointInterface, jli::PositionJointSaturationHandle >(
+        hw, urdf_model, pos_iface_);
+    tieJointsAndLimits< hi::VelocityJointInterface, jli::VelocityJointSaturationHandle >(
+        hw, urdf_model, vel_iface_);
+    tieJointsAndLimits< hi::EffortJointInterface, jli::EffortJointSaturationHandle >(hw, urdf_model,
+                                                                                     eff_iface_);
   }
 
-  virtual void doSwitch(const std::list< hardware_interface::ControllerInfo > &start_list,
-                        const std::list< hardware_interface::ControllerInfo > &stop_list) {
+  virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
+                        const std::list< hi::ControllerInfo > &stop_list) {
     // nothing to do
   }
 
@@ -69,7 +66,7 @@ public:
 
 private:
   template < typename CommandInterface, typename SaturationHandle, typename SaturationInterface >
-  void tieJointsAndLimits(hardware_interface::RobotHW &hw, const urdf::Model &urdf_model,
+  void tieJointsAndLimits(hi::RobotHW &hw, const urdf::Model &urdf_model,
                           SaturationInterface &sat_iface) {
     // find joint command interface that joints have been registered
     CommandInterface *const cmd_iface(hw.get< CommandInterface >());
@@ -85,8 +82,8 @@ private:
       if (!urdf_jnt) {
         continue;
       }
-      joint_limits_interface::JointLimits limits;
-      if (!joint_limits_interface::getJointLimits(urdf_jnt, limits)) {
+      jli::JointLimits limits;
+      if (!jli::getJointLimits(urdf_jnt, limits)) {
         continue;
       }
       // register new associated pair
@@ -95,9 +92,9 @@ private:
   }
 
 private:
-  joint_limits_interface::PositionJointSaturationInterface pos_iface_;
-  joint_limits_interface::VelocityJointSaturationInterface vel_iface_;
-  joint_limits_interface::EffortJointSaturationInterface eff_iface_;
+  jli::PositionJointSaturationInterface pos_iface_;
+  jli::VelocityJointSaturationInterface vel_iface_;
+  jli::EffortJointSaturationInterface eff_iface_;
 };
 } // namespace dynamixel_hardware
 

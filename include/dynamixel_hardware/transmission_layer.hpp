@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include <dynamixel_hardware/common_namespaces.hpp>
 #include <dynamixel_hardware/layer_base.hpp>
 #include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/controller_info.h>
@@ -27,18 +28,16 @@ namespace dynamixel_hardware {
 
 class TransmissionLayer : public LayerBase {
 public:
-  virtual bool init(hardware_interface::RobotHW &hw, ros::NodeHandle &param_nh,
-                    const std::string &urdf_str) {
+  virtual bool init(hi::RobotHW &hw, ros::NodeHandle &param_nh, const std::string &urdf_str) {
     // extract transmission informations from URDF
-    std::vector< transmission_interface::TransmissionInfo > infos;
-    if (!transmission_interface::TransmissionParser::parse(urdf_str, infos)) {
+    std::vector< ti::TransmissionInfo > infos;
+    if (!ti::TransmissionParser::parse(urdf_str, infos)) {
       ROS_ERROR("TransmissionLayer::init(): Failed to parse transmissions from URDF");
       return false;
     }
 
     // get actuator names already registered in the hardware
-    const hardware_interface::ActuatorStateInterface *const ator_iface(
-        hw.get< hardware_interface::ActuatorStateInterface >());
+    const hi::ActuatorStateInterface *const ator_iface(hw.get< hi::ActuatorStateInterface >());
     if (!ator_iface) {
       ROS_ERROR("TransmissionLayer::init(): No actuator registered");
       return false;
@@ -46,12 +45,11 @@ public:
     const std::vector< std::string > hw_ator_names(ator_iface->getNames());
 
     // load all transmissions for actuators in the hardware
-    iface_loader_.reset(
-        new transmission_interface::TransmissionInterfaceLoader(&hw, &transmissions_));
-    BOOST_FOREACH (const transmission_interface::TransmissionInfo &info, infos) {
+    iface_loader_.reset(new ti::TransmissionInterfaceLoader(&hw, &transmissions_));
+    BOOST_FOREACH (const ti::TransmissionInfo &info, infos) {
       // confirm the transmission is for some of actuators in the hardware
       bool has_non_hw_ator(false);
-      BOOST_FOREACH (const transmission_interface::ActuatorInfo &ator_info, info.actuators_) {
+      BOOST_FOREACH (const ti::ActuatorInfo &ator_info, info.actuators_) {
         if (std::find(hw_ator_names.begin(), hw_ator_names.end(), ator_info.name_) ==
             hw_ator_names.end()) {
           has_non_hw_ator = true;
@@ -72,21 +70,21 @@ public:
     return true;
   }
 
-  virtual void doSwitch(const std::list< hardware_interface::ControllerInfo > &start_list,
-                        const std::list< hardware_interface::ControllerInfo > &stop_list) {
+  virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
+                        const std::list< hi::ControllerInfo > &stop_list) {
     // nothing to do
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
     // read joint state from actuator state
-    propagate< transmission_interface::ActuatorToJointStateInterface >();
+    propagate< ti::ActuatorToJointStateInterface >();
   }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
     // write joint commands to actuator commands
-    propagate< transmission_interface::JointToActuatorPositionInterface >();
-    propagate< transmission_interface::JointToActuatorVelocityInterface >();
-    propagate< transmission_interface::JointToActuatorEffortInterface >();
+    propagate< ti::JointToActuatorPositionInterface >();
+    propagate< ti::JointToActuatorVelocityInterface >();
+    propagate< ti::JointToActuatorEffortInterface >();
   }
 
 private:
@@ -98,8 +96,8 @@ private:
   }
 
 private:
-  transmission_interface::RobotTransmissions transmissions_;
-  boost::scoped_ptr< transmission_interface::TransmissionInterfaceLoader > iface_loader_;
+  ti::RobotTransmissions transmissions_;
+  boost::scoped_ptr< ti::TransmissionInterfaceLoader > iface_loader_;
 };
 } // namespace dynamixel_hardware
 

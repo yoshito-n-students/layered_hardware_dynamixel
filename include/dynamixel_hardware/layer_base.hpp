@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 
+#include <dynamixel_hardware/common_namespaces.hpp>
 #include <hardware_interface/controller_info.h>
 #include <hardware_interface/robot_hw.h>
 #include <ros/duration.h>
@@ -14,11 +15,10 @@ namespace dynamixel_hardware {
 
 class LayerBase {
 public:
-  virtual bool init(hardware_interface::RobotHW &hw, ros::NodeHandle &param_nh,
-                    const std::string &urdf_str) = 0;
+  virtual bool init(hi::RobotHW &hw, ros::NodeHandle &param_nh, const std::string &urdf_str) = 0;
 
-  virtual void doSwitch(const std::list< hardware_interface::ControllerInfo > &start_list,
-                        const std::list< hardware_interface::ControllerInfo > &stop_list) = 0;
+  virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
+                        const std::list< hi::ControllerInfo > &stop_list) = 0;
 
   virtual void read(const ros::Time &time, const ros::Duration &period) = 0;
 

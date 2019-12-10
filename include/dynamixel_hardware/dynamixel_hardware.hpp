@@ -5,6 +5,7 @@
 #include <string>
 
 #include <dynamixel_hardware/actuator_layer.hpp>
+#include <dynamixel_hardware/common_namespaces.hpp>
 #include <dynamixel_hardware/joint_limits_layer.hpp>
 #include <dynamixel_hardware/transmission_layer.hpp>
 #include <hardware_interface/controller_info.h>
@@ -16,7 +17,7 @@
 
 namespace dynamixel_hardware {
 
-class DynamixelHardware : public hardware_interface::RobotHW {
+class DynamixelHardware : public hi::RobotHW {
 public:
   bool init(ros::NodeHandle &param_nh) {
     // get URDF description from param
@@ -33,8 +34,8 @@ public:
            joint_limits_layer_.init(*this, param_nh, urdf_str);
   }
 
-  virtual void doSwitch(const std::list< hardware_interface::ControllerInfo > &start_list,
-                        const std::list< hardware_interface::ControllerInfo > &stop_list) {
+  virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
+                        const std::list< hi::ControllerInfo > &stop_list) {
     // do something required on switching controllers
     joint_limits_layer_.doSwitch(start_list, stop_list);
     transmission_layer_.doSwitch(start_list, stop_list);

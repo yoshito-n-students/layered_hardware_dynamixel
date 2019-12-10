@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <dynamixel_hardware/actuator.hpp>
+#include <dynamixel_hardware/common_namespaces.hpp>
 #include <dynamixel_hardware/layer_base.hpp>
 #include <hardware_interface/actuator_command_interface.h>
 #include <hardware_interface/actuator_state_interface.h>
@@ -28,8 +29,7 @@ namespace dynamixel_hardware {
 
 class ActuatorLayer : public LayerBase {
 public:
-  virtual bool init(hardware_interface::RobotHW &hw, ros::NodeHandle &param_nh,
-                    const std::string &urdf_str) {
+  virtual bool init(hi::RobotHW &hw, ros::NodeHandle &param_nh, const std::string &urdf_str) {
     // register actuator interfaces to the hardware so that other layers can find the interfaces
     hw.registerInterface(&state_iface_);
     hw.registerInterface(&pos_iface_);
@@ -41,7 +41,7 @@ public:
       device_.open_serial(param_nh.param< std::string >("serial_interface", "/dev/ttyUSB0"),
                           param_nh.param("baudrate", 115200));
       device_.set_recv_timeout(param_nh.param("read_timeout", 0.05));
-    } catch (const dynamixel::errors::Error &err) {
+    } catch (const de::Error &err) {
       ROS_ERROR_STREAM("ActuatorLayer::init(): Failed to open Usb2Dynamixel: " << err.msg());
       return false;
     }
@@ -72,8 +72,8 @@ public:
     return true;
   }
 
-  virtual void doSwitch(const std::list< hardware_interface::ControllerInfo > &start_list,
-                        const std::list< hardware_interface::ControllerInfo > &stop_list) {
+  virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
+                        const std::list< hi::ControllerInfo > &stop_list) {
     // notify controller switching to all actuators
     BOOST_FOREACH (const ActuatorPtr &ator, actuators_) { ator->doSwitch(start_list, stop_list); }
   }
@@ -89,12 +89,12 @@ public:
   }
 
 private:
-  hardware_interface::ActuatorStateInterface state_iface_;
-  hardware_interface::PositionActuatorInterface pos_iface_;
-  hardware_interface::VelocityActuatorInterface vel_iface_;
-  hardware_interface::EffortActuatorInterface eff_iface_;
+  hi::ActuatorStateInterface state_iface_;
+  hi::PositionActuatorInterface pos_iface_;
+  hi::VelocityActuatorInterface vel_iface_;
+  hi::EffortActuatorInterface eff_iface_;
 
-  dynamixel::controllers::Usb2Dynamixel device_;
+  dc::Usb2Dynamixel device_;
   std::vector< ActuatorPtr > actuators_;
 };
 } // namespace dynamixel_hardware
