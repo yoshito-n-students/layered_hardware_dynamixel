@@ -5,6 +5,14 @@
 #include <memory>
 #include <string>
 
+#include <dynamixel_hardware/actuator_monitor_mode.hpp>
+#include <dynamixel_hardware/actuator_operating_mode_base.hpp>
+#include <dynamixel_hardware/actuator_position_mode.hpp>
+#include <dynamixel_hardware/actuator_reset_mode.hpp>
+#include <dynamixel_hardware/actuator_torque_based_position_mode.hpp>
+#include <dynamixel_hardware/actuator_torque_disable_mode.hpp>
+#include <dynamixel_hardware/actuator_torque_mode.hpp>
+#include <dynamixel_hardware/actuator_velocity_mode.hpp>
 #include <hardware_interface/actuator_command_interface.h>
 #include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/controller_info.h>
@@ -19,6 +27,7 @@
 #include <dynamixel/protocols/protocol2.hpp>
 #include <dynamixel/servos/base_servo.hpp>
 
+#include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace dynamixel_hardware {
@@ -89,6 +98,26 @@ private:
     }
     iface->registerHandle(handle);
     return true;
+  }
+
+  ActuatorOperatingModePtr makeOperatingMode(const std::string &mode_str) {
+    if (mode_str == "monitor") {
+      return boost::make_shared< ActuatorMonitorMode >(&pos_, &vel_, &eff_);
+    } else if (mode_str == "torque_disable") {
+      return boost::make_shared< ActuatorTorqueDisableMode >(&pos_, &vel_, &eff_);
+    } else if (mode_str == "position") {
+      return boost::make_shared< ActuatorPositionMode >(&pos_, &vel_, &eff_, &pos_cmd_);
+    } else if (mode_str == "velocity") {
+      return boost::make_shared< ActuatorVelocityMode >(&pos_, &vel_, &eff_, &vel_cmd_);
+    } else if (mode_str == "torque") {
+      return boost::make_shared< ActuatorTorqueMode >(&pos_, &vel_, &eff_, &eff_cmd_);
+    } else if (mode_str == "torque_based_position") {
+      return boost::make_shared< ActuatorTorqueBasedPositionMode >(&pos_, &vel_, &eff_, &pos_cmd_,
+                                                                   &vel_cmd_, &eff_cmd_);
+    } else if (mode_str == "reset") {
+      return boost::make_shared< ActuatorResetMode >();
+    }
+    return ActuatorOperatingModePtr();
   }
 
 private:
