@@ -106,20 +106,34 @@ public:
 
   void doSwitch(const std::list< hi::ControllerInfo > &starting_controller_list,
                 const std::list< hi::ControllerInfo > &stopping_controller_list) {
-    // switch actuator's operating modes according to starting controllers
-    BOOST_FOREACH (const hi::ControllerInfo &starting_controller, starting_controller_list) {
-      // find mode to switch
-      const std::map< std::string, ActuatorOperatingModePtr >::const_iterator mode_to_switch(
-          mode_map_.find(starting_controller.name));
-      if (mode_to_switch == mode_map_.end()) {
-        continue;
+    // stop actuator's operating mode according to stopping controller list
+    if (present_mode_) {
+      BOOST_FOREACH (const hi::ControllerInfo &stopping_controller, stopping_controller_list) {
+        const std::map< std::string, ActuatorOperatingModePtr >::const_iterator mode_to_stop(
+            mode_map_.find(stopping_controller.name));
+        if (mode_to_stop != mode_map_.end() && mode_to_stop->second == present_mode_) {
+          ROS_INFO_STREAM("Actuator::doSwitch(): Stopping operating mode "
+                          << present_mode_->getName() << " for actuator " << data_->name);
+          present_mode_->stopping();
+          present_mode_.reset();
+          break;
+        }
       }
-      // switch modes
-      if (present_mode_) {
-        present_mode_->stopping();
+    }
+
+    // start actuator's operating modes according to starting controllers
+    if (!present_mode_) {
+      BOOST_FOREACH (const hi::ControllerInfo &starting_controller, starting_controller_list) {
+        const std::map< std::string, ActuatorOperatingModePtr >::const_iterator mode_to_start(
+            mode_map_.find(starting_controller.name));
+        if (mode_to_start != mode_map_.end() && mode_to_start->second) {
+          ROS_INFO_STREAM("Actuator::doSwitch(): Starting operating mode "
+                          << mode_to_start->second->getName() << " for actuator " << data_->name);
+          present_mode_ = mode_to_start->second;
+          present_mode_->starting();
+          break;
+        }
       }
-      present_mode_ = mode_to_switch->second;
-      present_mode_->starting();
     }
   }
 
