@@ -48,16 +48,15 @@ protected:
       data_->device.send(data_->servo->get_present_position_angle());
       data_->device.recv(status);
     } catch (const de::Error &err) {
-      ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readPosition(): Failed to read dynamixel's position (id: "
-          << data_->servo->id() << "): " << err.msg());
+      ROS_ERROR_STREAM("ActuatorOperatingModeBase::readPosition(): Failed to read position from "
+                       << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
       return;
     }
     // validate the response
     if (!status.valid()) {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readPosition(): Invalid status packet received "
-                       "when reading dynamixel's position (id: "
-                       << data_->servo->id() << ")");
+                       "when reading position from "
+                       << data_->name << " (id: " << data_->servo->id() << ")");
       return;
     }
     // extract the position from the response
@@ -65,8 +64,8 @@ protected:
       data_->pos = data_->servo->parse_present_position_angle(status);
     } catch (const de::Error &err) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readPosition(): Failed to unpack dynamixel's position (id: "
-          << data_->servo->id() << ")" << err.msg());
+          "ActuatorOperatingModeBase::readPosition(): Failed to unpack position packet from "
+          << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
       return;
     }
   }
@@ -78,16 +77,15 @@ protected:
       data_->device.send(data_->servo->get_present_speed());
       data_->device.recv(status);
     } catch (const de::Error &err) {
-      ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readVelocity(): Failed to read dynamixel's velocity (id: "
-          << data_->servo->id() << "): " << err.msg());
+      ROS_ERROR_STREAM("ActuatorOperatingModeBase::readVelocity(): Failed to read velocity from "
+                       << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
       return;
     }
     // validate the response
     if (!status.valid()) {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readVelocity(): Invalid status packet received "
-                       "when reading dynamixel's velocity (id: "
-                       << data_->servo->id() << ")");
+                       "when reading velocity from "
+                       << data_->name << " (id: " << data_->servo->id() << ")");
       return;
     }
     // extract the velocity from the response
@@ -95,8 +93,8 @@ protected:
       data_->vel = data_->servo->parse_joint_speed(status);
     } catch (const de::Error &err) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readVelocity(): Failed to unpack dynamixel's velocity (id: "
-          << data_->servo->id() << ")" << err.msg());
+          "ActuatorOperatingModeBase::readVelocity(): Failed to unpack velocity packet from "
+          << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
       return;
     }
   }
@@ -108,16 +106,15 @@ protected:
       data_->device.send(data_->servo->get_present_current());
       data_->device.recv(status);
     } catch (const de::Error &err) {
-      ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readEffort(): Failed to read dynamixel's current (id: "
-          << data_->servo->id() << "): " << err.msg());
+      ROS_ERROR_STREAM("ActuatorOperatingModeBase::readEffort(): Failed to read current from "
+                       << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
       return;
     }
     // validate the response
     if (!status.valid()) {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readEffort(): Invalid status packet received "
-                       "when reading dynamixel's current (id: "
-                       << data_->servo->id() << ")");
+                       "when reading current from "
+                       << data_->name << " (id: " << data_->servo->id() << ")");
       return;
     }
     // extract the current from the response
@@ -126,8 +123,8 @@ protected:
                    data_->torque_constant;
     } catch (const de::Error &err) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readEffort(): Failed to unpack dynamixel's current (id: "
-          << data_->servo->id() << ")" << err.msg());
+          "ActuatorOperatingModeBase::readEffort(): Failed to unpack current packet from "
+          << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
       return;
     }
   }
@@ -150,7 +147,7 @@ protected:
     } catch (const de::Error &err) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeTorqueEnable(): Failed to write torque-enable ("
-          << value << ") to " << data_->name);
+          << value << ") to " << data_->name << " (id: " << data_->servo->id() << ")");
       return;
     }
   }
@@ -163,7 +160,8 @@ protected:
     } catch (const de::Error &err) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writePositionCommand(): Failed to write operating mode ("
-          << dynamixel::mode2str(value) << ") to " << data_->name);
+          << dynamixel::mode2str(value) << ") to " << data_->name << " (id: " << data_->servo->id()
+          << ")");
       return;
     }
   }
@@ -176,7 +174,7 @@ protected:
     } catch (const de::Error &err) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writePositionCommand(): Failed to write position command to "
-          << data_->name);
+          << data_->name << " (id: " << data_->servo->id() << ")");
       return;
     }
   }
@@ -189,7 +187,7 @@ protected:
     } catch (const de::Error &err) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeVelocityCommand(): Failed to write velocity command to "
-          << data_->name);
+          << data_->name << " (id: " << data_->servo->id() << ")");
       return;
     }
   }
@@ -203,7 +201,7 @@ protected:
     } catch (const de::Error &err) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeEffortCommand(): Failed to write effort command to "
-          << data_->name);
+          << data_->name << " (id: " << data_->servo->id() << ")");
       return;
     }
   }
