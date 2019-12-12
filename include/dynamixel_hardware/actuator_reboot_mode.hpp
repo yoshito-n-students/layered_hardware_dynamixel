@@ -15,7 +15,7 @@ namespace dynamixel_hardware {
 
 class ActuatorRebootMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorRebootMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase(data) {}
+  ActuatorRebootMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase("reboot", data) {}
 
   virtual void starting() {
     try {

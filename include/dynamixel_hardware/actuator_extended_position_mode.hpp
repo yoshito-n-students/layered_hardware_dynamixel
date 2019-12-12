@@ -15,7 +15,8 @@ namespace dynamixel_hardware {
 
 class ActuatorExtendedPositionMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorExtendedPositionMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase(data) {}
+  ActuatorExtendedPositionMode(const ActuatorDataPtr &data)
+      : ActuatorOperatingModeBase("extended_position", data) {}
 
   virtual void starting() {
     // switch to extended-position mode & torque enable

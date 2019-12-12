@@ -14,7 +14,7 @@ namespace dynamixel_hardware {
 
 class ActuatorVelocityMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorVelocityMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase(data) {}
+  ActuatorVelocityMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase("velocity", data) {}
 
   virtual void starting() {
     // switch to velocity mode

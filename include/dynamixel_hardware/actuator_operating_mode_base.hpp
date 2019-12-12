@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <limits>
+#include <string>
 
 #include <dynamixel_hardware/actuator_data.hpp>
 #include <ros/console.h>
@@ -20,9 +21,12 @@ namespace dynamixel_hardware {
 
 class ActuatorOperatingModeBase {
 public:
-  ActuatorOperatingModeBase(const ActuatorDataPtr &data) : data_(data) {}
+  ActuatorOperatingModeBase(const std::string &name, const ActuatorDataPtr &data)
+      : name_(name), data_(data) {}
 
   virtual ~ActuatorOperatingModeBase() {}
+
+  std::string getName() const { return name_; }
 
   virtual void starting() {}
 
@@ -214,6 +218,7 @@ protected:
   }
 
 protected:
+  const std::string name_;
   const ActuatorDataPtr data_;
 };
 

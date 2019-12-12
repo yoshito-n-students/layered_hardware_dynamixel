@@ -15,7 +15,8 @@ namespace dynamixel_hardware {
 
 class ActuatorCurrentBasedPositionMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorCurrentBasedPositionMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase(data) {}
+  ActuatorCurrentBasedPositionMode(const ActuatorDataPtr &data)
+      : ActuatorOperatingModeBase("current_based_position", data) {}
 
   virtual void starting() {
     // switch to current-based position mode

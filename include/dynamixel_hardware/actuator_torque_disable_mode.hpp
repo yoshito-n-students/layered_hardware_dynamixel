@@ -11,7 +11,8 @@ namespace dynamixel_hardware {
 
 class ActuatorTorqueDisableMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorTorqueDisableMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase(data) {}
+  ActuatorTorqueDisableMode(const ActuatorDataPtr &data)
+      : ActuatorOperatingModeBase("torque_disable", data) {}
 
   virtual void starting() {
     // torque disable

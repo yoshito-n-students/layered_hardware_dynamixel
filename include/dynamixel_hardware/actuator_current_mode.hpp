@@ -13,7 +13,7 @@ namespace dynamixel_hardware {
 
 class ActuatorCurrentMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorCurrentMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase(data) {}
+  ActuatorCurrentMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase("current", data) {}
 
   virtual void starting() {
     // switch to current mode
