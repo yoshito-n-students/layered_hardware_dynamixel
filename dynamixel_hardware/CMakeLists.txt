@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   joint_limits_interface
   libdynamixel_ros
   roscpp
+  serial
   transmission_interface
   urdf
 )
@@ -109,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES dynamixel_hardware
-  CATKIN_DEPENDS controller_manager hardware_interface joint_limits_interface libdynamixel_ros roscpp transmission_interface urdf
+  CATKIN_DEPENDS controller_manager hardware_interface joint_limits_interface libdynamixel_ros roscpp serial transmission_interface urdf
 #  DEPENDS system_lib
 )
 

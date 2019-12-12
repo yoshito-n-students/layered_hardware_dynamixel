@@ -8,6 +8,7 @@
 #include <dynamixel_hardware/actuator.hpp>
 #include <dynamixel_hardware/common_namespaces.hpp>
 #include <dynamixel_hardware/layer_base.hpp>
+#include <dynamixel_hardware/usb2dynamixel_serial.hpp>
 #include <hardware_interface/actuator_command_interface.h>
 #include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/controller_info.h>
@@ -94,6 +95,7 @@ private:
   hi::VelocityActuatorInterface vel_iface_;
   hi::EffortActuatorInterface eff_iface_;
 
+  // TODO: replace Usb2Dynamixel to Usb2DynamixelSerial
   dc::Usb2Dynamixel device_;
   std::vector< ActuatorPtr > actuators_;
 };

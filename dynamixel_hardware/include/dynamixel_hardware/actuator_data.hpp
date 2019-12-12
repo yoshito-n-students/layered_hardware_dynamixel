@@ -23,6 +23,7 @@ struct ActuatorData {
 
   // handles
   const std::string name;
+  // TODO: replace Usb2Dynamixel to Usb2DynamixelSerial
   dc::Usb2Dynamixel &device;
   const std::shared_ptr< ds::BaseServo< dp::Protocol2 > > servo;
 
