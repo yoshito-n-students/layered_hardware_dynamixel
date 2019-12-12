@@ -1,24 +1,34 @@
 #ifndef DYNAMIXEL_HARDWARE_ACTUATOR_TORQUE_DISABLE_MODE_HPP
 #define DYNAMIXEL_HARDWARE_ACTUATOR_TORQUE_DISABLE_MODE_HPP
 
-#include <dynamixel_hardware/actuator_monitor_mode.hpp>
+#include <dynamixel_hardware/actuator_data.hpp>
+#include <dynamixel_hardware/actuator_operating_mode_base.hpp>
+#include <dynamixel_hardware/common_namespaces.hpp>
 #include <ros/duration.h>
 #include <ros/time.h>
 
 namespace dynamixel_hardware {
 
-class ActuatorTorqueDisableMode : public ActuatorMonitorMode {
+class ActuatorTorqueDisableMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorTorqueDisableMode(double *const pos, double *const vel, double *const eff)
-      : ActuatorMonitorMode(pos, vel, eff) {}
+  ActuatorTorqueDisableMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase(data) {}
 
   virtual void starting() {
-    ActuatorMonitorMode::starting();
-    // TODO: torque disable
+    // torque disable
+    writeTorqueEnable(false);
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
-    ActuatorMonitorMode::read(time, period);
+    // read pos, vel & eff
+    readState();
+  }
+
+  virtual void write(const ros::Time &time, const ros::Duration &period) {
+    // nothing to do
+  }
+
+  virtual void stopping() {
+    // nothing to do
   }
 };
 } // namespace dynamixel_hardware

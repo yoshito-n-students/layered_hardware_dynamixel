@@ -6,14 +6,13 @@
 #include <memory>
 #include <string>
 
-#include <dynamixel_hardware/actuator_monitor_mode.hpp>
-#include <dynamixel_hardware/actuator_null_mode.hpp>
+#include <dynamixel_hardware/actuator_current_based_position_mode.hpp>
+#include <dynamixel_hardware/actuator_current_mode.hpp>
+#include <dynamixel_hardware/actuator_data.hpp>
+#include <dynamixel_hardware/actuator_extended_position_mode.hpp>
 #include <dynamixel_hardware/actuator_operating_mode_base.hpp>
-#include <dynamixel_hardware/actuator_position_mode.hpp>
-#include <dynamixel_hardware/actuator_reset_mode.hpp>
-#include <dynamixel_hardware/actuator_torque_based_position_mode.hpp>
+#include <dynamixel_hardware/actuator_reboot_mode.hpp>
 #include <dynamixel_hardware/actuator_torque_disable_mode.hpp>
-#include <dynamixel_hardware/actuator_torque_mode.hpp>
 #include <dynamixel_hardware/actuator_velocity_mode.hpp>
 #include <dynamixel_hardware/common_namespaces.hpp>
 #include <hardware_interface/actuator_command_interface.h>
@@ -38,23 +37,12 @@ namespace dynamixel_hardware {
 
 class Actuator {
 public:
-  Actuator(const std::string &name, dc::Usb2Dynamixel &device) : name_(name), device_(device) {}
+  Actuator() {}
 
   virtual ~Actuator() {}
 
-  bool init(hi::RobotHW &hw, ros::NodeHandle &param_nh) {
-    // register actuator states & commands to corresponding hardware interfaces
-    const hi::ActuatorStateHandle state_handle(name_, &pos_, &vel_, &eff_);
-    if (!registerActuatorTo< hi::ActuatorStateInterface >(hw, state_handle) ||
-        !registerActuatorTo< hi::PositionActuatorInterface >(
-            hw, hi::ActuatorHandle(state_handle, &pos_)) ||
-        !registerActuatorTo< hi::VelocityActuatorInterface >(
-            hw, hi::ActuatorHandle(state_handle, &vel_)) ||
-        !registerActuatorTo< hi::EffortActuatorInterface >(
-            hw, hi::ActuatorHandle(state_handle, &eff_))) {
-      return false;
-    }
-
+  bool init(const std::string &name, dc::Usb2Dynamixel &device, hi::RobotHW &hw,
+            ros::NodeHandle &param_nh) {
     // dynamixel id from param
     int id;
     if (!param_nh.getParam("id", id)) {
@@ -63,10 +51,34 @@ public:
     }
 
     // find dynamixel actuator by id
-    servo_ = dynamixel::find_servo< dp::Protocol2 >(device_, id);
-    if (!servo_) {
-      ROS_ERROR_STREAM("Actuator::init(): Failed to find the actuator " << name_ << "(id: " << id
+    const std::shared_ptr< ds::BaseServo< dp::Protocol2 > > servo(
+        dynamixel::find_servo< dp::Protocol2 >(device, id));
+    if (!servo) {
+      ROS_ERROR_STREAM("Actuator::init(): Failed to find the actuator " << name << "(id: " << id
                                                                         << ")");
+      return false;
+    }
+
+    // torque constant from param
+    double torque_constant;
+    if (!param_nh.getParam("torque_constant", torque_constant)) {
+      ROS_ERROR_STREAM("Actuator::init(): Failed to get param "
+                       << param_nh.resolveName("torque_constant"));
+      return false;
+    }
+
+    // allocate data structure
+    data_.reset(new ActuatorData(name, device, servo, torque_constant));
+
+    // register actuator states & commands to corresponding hardware interfaces
+    const hi::ActuatorStateHandle state_handle(data_->name, &data_->pos, &data_->vel, &data_->eff);
+    if (!registerActuatorTo< hi::ActuatorStateInterface >(hw, state_handle) ||
+        !registerActuatorTo< hi::PositionActuatorInterface >(
+            hw, hi::ActuatorHandle(state_handle, &data_->pos_cmd)) ||
+        !registerActuatorTo< hi::VelocityActuatorInterface >(
+            hw, hi::ActuatorHandle(state_handle, &data_->vel_cmd)) ||
+        !registerActuatorTo< hi::EffortActuatorInterface >(
+            hw, hi::ActuatorHandle(state_handle, &data_->eff_cmd))) {
       return false;
     }
 
@@ -81,16 +93,15 @@ public:
     BOOST_FOREACH (const ModeNameMap::value_type &mode_name, mode_name_map) {
       const ActuatorOperatingModePtr mode(makeOperatingMode(mode_name.second));
       if (!mode) {
-        ROS_ERROR_STREAM("Actuator::init(): Failed to make operating mode " << mode_name.second
-                                                                            << " for " << name_);
+        ROS_ERROR_STREAM("Actuator::init(): Failed to make operating mode "
+                         << mode_name.second << " for " << data_->name);
         return false;
       }
       mode_map_[mode_name.first] = mode;
     }
 
-    // TODO: init actuator based on params
-
-    present_mode_ = boost::make_shared< ActuatorNullMode >();
+    // set initial mode that does completely nothing
+    present_mode_ = ActuatorOperatingModePtr();
   }
 
   void doSwitch(const std::list< hi::ControllerInfo > &starting_controller_list,
@@ -104,18 +115,24 @@ public:
         continue;
       }
       // switch modes
-      present_mode_->stopping();
+      if (present_mode_) {
+        present_mode_->stopping();
+      }
       present_mode_ = mode_to_switch->second;
       present_mode_->starting();
     }
   }
 
   void read(const ros::Time &time, const ros::Duration &period) {
-    present_mode_->read(time, period);
+    if (present_mode_) {
+      present_mode_->read(time, period);
+    }
   }
 
   void write(const ros::Time &time, const ros::Duration &period) {
-    present_mode_->write(time, period);
+    if (present_mode_) {
+      present_mode_->write(time, period);
+    }
   }
 
 private:
@@ -131,44 +148,28 @@ private:
   }
 
   ActuatorOperatingModePtr makeOperatingMode(const std::string &mode_str) {
-    if (mode_str == "monitor") {
-      return boost::make_shared< ActuatorMonitorMode >(&pos_, &vel_, &eff_);
+    if (mode_str == "current") {
+      return boost::make_shared< ActuatorCurrentMode >(data_);
+    } else if (mode_str == "current_based_position") {
+      return boost::make_shared< ActuatorCurrentBasedPositionMode >(data_);
+    } else if (mode_str == "extended_position") {
+      return boost::make_shared< ActuatorExtendedPositionMode >(data_);
+    } else if (mode_str == "reboot") {
+      return boost::make_shared< ActuatorRebootMode >(data_);
     } else if (mode_str == "torque_disable") {
-      return boost::make_shared< ActuatorTorqueDisableMode >(&pos_, &vel_, &eff_);
-    } else if (mode_str == "position") {
-      return boost::make_shared< ActuatorPositionMode >(&pos_, &vel_, &eff_, &pos_cmd_);
+      return boost::make_shared< ActuatorTorqueDisableMode >(data_);
     } else if (mode_str == "velocity") {
-      return boost::make_shared< ActuatorVelocityMode >(&pos_, &vel_, &eff_, &vel_cmd_);
-    } else if (mode_str == "torque") {
-      return boost::make_shared< ActuatorTorqueMode >(&pos_, &vel_, &eff_, &eff_cmd_);
-    } else if (mode_str == "torque_based_position") {
-      return boost::make_shared< ActuatorTorqueBasedPositionMode >(&pos_, &vel_, &eff_, &pos_cmd_,
-                                                                   &vel_cmd_, &eff_cmd_);
-    } else if (mode_str == "reset") {
-      return boost::make_shared< ActuatorResetMode >();
-    } else if (mode_str == "null") {
-      return boost::make_shared< ActuatorNullMode >();
+      return boost::make_shared< ActuatorVelocityMode >(data_);
     }
     ROS_ERROR_STREAM("Actuator::makeOperatingMode(): Unknown operating mode name " << mode_str);
     return ActuatorOperatingModePtr();
   }
 
 private:
-  const std::string name_;
-  dc::Usb2Dynamixel &device_;
-  std::shared_ptr< ds::BaseServo< dp::Protocol2 > > servo_;
+  ActuatorDataPtr data_;
+
   std::map< std::string, ActuatorOperatingModePtr > mode_map_;
   ActuatorOperatingModePtr present_mode_;
-
-  // params
-  double torque_constant_;
-
-  // states
-  double pos_, vel_, eff_;
-
-  // commands
-  double pos_cmd_, vel_cmd_, eff_cmd_;
-  double prev_pos_cmd_, prev_vel_cmd_, prev_eff_cmd_;
 };
 
 typedef boost::shared_ptr< Actuator > ActuatorPtr;

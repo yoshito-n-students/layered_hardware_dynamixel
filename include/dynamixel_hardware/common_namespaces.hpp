@@ -4,6 +4,7 @@
 namespace dynamixel {
 namespace controllers {}
 namespace errors {}
+namespace instructions {}
 namespace protocols {}
 namespace servos {}
 } // namespace dynamixel
@@ -17,6 +18,7 @@ namespace transmission_interface {}
 namespace dynamixel_hardware {
 namespace dc = dynamixel::controllers;
 namespace de = dynamixel::errors;
+namespace di = dynamixel::instructions;
 namespace dp = dynamixel::protocols;
 namespace ds = dynamixel::servos;
 namespace hi = hardware_interface;

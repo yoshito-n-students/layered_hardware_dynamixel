@@ -1,30 +1,41 @@
 #ifndef DYNAMIXEL_HARDWARE_ACTUATOR_VELOCITY_MODE_HPP
 #define DYNAMIXEL_HARDWARE_ACTUATOR_VELOCITY_MODE_HPP
 
-#include <dynamixel_hardware/actuator_monitor_mode.hpp>
+#include <cmath>
+#include <limits>
+
+#include <dynamixel_hardware/actuator_data.hpp>
+#include <dynamixel_hardware/actuator_operating_mode_base.hpp>
+#include <dynamixel_hardware/common_namespaces.hpp>
 #include <ros/duration.h>
 #include <ros/time.h>
 
 namespace dynamixel_hardware {
 
-class ActuatorVelocityMode : public ActuatorMonitorMode {
+class ActuatorVelocityMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorVelocityMode(double *const pos, double *const vel, double *const eff,
-                       double *const vel_cmd)
-      : ActuatorMonitorMode(pos, vel, eff), vel_cmd_(vel_cmd) {}
+  ActuatorVelocityMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase(data) {}
 
   virtual void starting() {
-    ActuatorMonitorMode::starting();
-    // TODO: switch to velocity mode
+    // switch to velocity mode
+    writeOperatingMode(dynamixel::OperatingMode::velocity);
+
+    // set reasonable initial command
+    data_->vel_cmd = 0.;
+    prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
   }
 
+  virtual void read(const ros::Time &time, const ros::Duration &period) { readState(); }
+
   virtual void write(const ros::Time &time, const ros::Duration &period) {
-    ActuatorMonitorMode::write(time, period);
-    // TODO: write velocity command
+    if (areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
+      writeVelocityCommand();
+      prev_vel_cmd_ = data_->vel_cmd;
+    }
   }
 
 private:
-  double *const vel_cmd_;
+  double prev_vel_cmd_;
 };
 } // namespace dynamixel_hardware
 
