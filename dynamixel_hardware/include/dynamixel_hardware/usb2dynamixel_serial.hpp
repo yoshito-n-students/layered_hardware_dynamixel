@@ -125,7 +125,7 @@ public:
     report_bad_packet_ = report_bad_packet;
   }
 
-  bool report_bad_packet() { return report_bad_packet_; }
+  bool report_bad_packet() const { return report_bad_packet_; }
 
 private:
   serial::Serial serial_;
