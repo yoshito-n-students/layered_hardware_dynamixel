@@ -5,6 +5,7 @@
 #include <ros/init.h>
 #include <ros/node_handle.h>
 #include <ros/rate.h>
+#include <ros/spinner.h>
 #include <ros/time.h>
 
 int main(int argc, char *argv[]) {
@@ -12,14 +13,16 @@ int main(int argc, char *argv[]) {
   ros::NodeHandle nh, pnh("~");
 
   dynamixel_hardware::DynamixelHardware hw;
-  if (hw.init(pnh)) {
+  if (!hw.init(pnh)) {
     ROS_ERROR("Failed to init DynamixelHardware");
     return 1;
   }
 
   controller_manager::ControllerManager cm(&hw, nh);
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
 
-  ros::Rate rate(pnh.param("control_frequency", 0.1));
+  ros::Rate rate(pnh.param("control_frequency", 10));
   ros::Time prev_time(ros::Time::now());
   while (ros::ok()) {
     const ros::Time time(ros::Time::now());
