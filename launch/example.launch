@@ -1,0 +1,47 @@
+<launch>
+
+    <!-- The robot description -->
+    <param name="robot_description" textfile="$(find dynamixel_hardware)/urdf/example.urdf" />
+
+    <!-- Hardware driver -->
+    <node name="example_dynamixel_hardware_node" pkg="dynamixel_hardware" type="dynamixel_hardware_node" output="screen">
+        <rosparam>
+            control_frequency: 20
+            serial_interface: /dev/ttyUSB0
+            baudrate: 1000000
+            actuators:
+                example_actuator:
+                    id: 0
+                    torque_constant: 1.0
+                    operating_mode_map:
+                        example_joint_position_controller: extended_position
+                        example_joint_velocity_controller: velocity
+                        example_joint_effort_controller: current
+                        example_joint_reboot_controller: reboot
+                    initial_control_table:
+                        Velocity_Limit: 100
+                        Current_Limit: 100
+        </rosparam>
+    </node>
+
+    <!-- Controller parameters -->
+    <rosparam>
+        joint_state_controller:
+            type: joint_state_controller/JointStateController
+            publish_rate: 20
+        example_joint_position_controller:
+            type: position_controllers/JointPositionController
+            joint: example_joint
+        example_joint_velocity_controller:
+            type: velocity_controllers/JointVelocityController
+            joint: example_joint
+        example_joint_effort_controller:
+            type: effort_controllers/JointEffortController
+            joint: example_joint
+    </rosparam>
+
+    <!-- Controller starter -->
+    <node name="controller_starter" pkg="controller_manager" type="controller_manager" output="screen"
+          args="spawn joint_state_controller example_joint_position_controller" />
+
+</launch>
