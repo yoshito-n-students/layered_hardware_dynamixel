@@ -4,6 +4,7 @@
 #include <dynamixel_hardware/actuator_data.hpp>
 #include <dynamixel_hardware/actuator_operating_mode_base.hpp>
 #include <dynamixel_hardware/common_namespaces.hpp>
+#include <ros/console.h>
 #include <ros/duration.h>
 #include <ros/time.h>
 

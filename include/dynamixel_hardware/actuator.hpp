@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <list>
 #include <map>
-#include <memory>
 #include <string>
 
 #include <dynamixel_hardware/actuator_current_based_position_mode.hpp>
