@@ -8,7 +8,7 @@
 #include <dynamixel_hardware/actuator.hpp>
 #include <dynamixel_hardware/common_namespaces.hpp>
 #include <dynamixel_hardware/layer_base.hpp>
-#include <dynamixel_hardware/usb2dynamixel_serial.hpp>
+#include <dynamixel_workbench_toolbox/dynamixel_workbench.h>
 #include <hardware_interface/actuator_command_interface.h>
 #include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/controller_info.h>
@@ -19,10 +19,6 @@
 #include <ros/node_handle.h>
 #include <ros/time.h>
 #include <xmlrpcpp/XmlRpcValue.h>
-
-#include <dynamixel/controllers/usb2dynamixel.hpp>
-#include <dynamixel/errors.hpp>
-#include <dynamixel/misc.hpp> // for get_baudrate()
 
 #include <boost/foreach.hpp>
 
@@ -38,12 +34,9 @@ public:
     hw.registerInterface(&eff_iface_);
 
     // open USB serial device
-    try {
-      device_.open_serial(param_nh.param< std::string >("serial_interface", "/dev/ttyUSB0"),
-                          param_nh.param("baudrate", 115200));
-      device_.set_recv_timeout(param_nh.param("read_timeout", 0.05));
-    } catch (const de::Error &err) {
-      ROS_ERROR_STREAM("ActuatorLayer::init(): Failed to open Usb2Dynamixel: " << err.msg());
+    if (!dxl_wb_.init(param_nh.param< std::string >("serial_interface", "/dev/ttyUSB0").c_str(),
+                      param_nh.param("baudrate", 115200))) {
+      ROS_ERROR_STREAM("ActuatorLayer::init(): Failed to open DynamixelWorkbench");
       return false;
     }
 
@@ -64,7 +57,7 @@ public:
     BOOST_FOREACH (const XmlRpc::XmlRpcValue::ValueStruct::value_type &ator_param, ators_param) {
       ActuatorPtr ator(new Actuator());
       ros::NodeHandle ator_param_nh(param_nh, ros::names::append("actuators", ator_param.first));
-      if (!ator->init(ator_param.first, device_, hw, ator_param_nh)) {
+      if (!ator->init(ator_param.first, dxl_wb_, hw, ator_param_nh)) {
         return false;
       }
       actuators_.push_back(ator);
@@ -95,8 +88,7 @@ private:
   hi::VelocityActuatorInterface vel_iface_;
   hi::EffortActuatorInterface eff_iface_;
 
-  // TODO: replace Usb2Dynamixel to Usb2DynamixelSerial
-  dc::Usb2Dynamixel device_;
+  DynamixelWorkbench dxl_wb_;
   std::vector< ActuatorPtr > actuators_;
 };
 } // namespace dynamixel_hardware

@@ -24,11 +24,6 @@
 #include <ros/node_handle.h>
 #include <ros/time.h>
 
-#include <dynamixel/auto_detect.hpp> // for find_servo()
-#include <dynamixel/controllers/usb2dynamixel.hpp>
-#include <dynamixel/protocols/protocol2.hpp>
-#include <dynamixel/servos/base_servo.hpp>
-
 #include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
@@ -41,7 +36,7 @@ public:
 
   virtual ~Actuator() {}
 
-  bool init(const std::string &name, dc::Usb2Dynamixel &device, hi::RobotHW &hw,
+  bool init(const std::string &name, DynamixelWorkbench &dxl_wb, hi::RobotHW &hw,
             ros::NodeHandle &param_nh) {
     // dynamixel id from param
     int id;
@@ -51,9 +46,8 @@ public:
     }
 
     // find dynamixel actuator by id
-    const std::shared_ptr< ds::BaseServo< dp::Protocol2 > > servo(
-        dynamixel::find_servo< dp::Protocol2 >(device, id));
-    if (!servo) {
+    uint16_t model_number;
+    if (!) {
       ROS_ERROR_STREAM("Actuator::init(): Failed to find the actuator " << name << "(id: " << id
                                                                         << ")");
       return false;

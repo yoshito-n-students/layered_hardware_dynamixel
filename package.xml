@@ -50,25 +50,25 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>controller_manager</build_depend>
+  <build_depend>dynamixel_workbench_toolbox</build_depend>
   <build_depend>hardware_interface</build_depend>
   <build_depend>joint_limits_interface</build_depend>
-  <build_depend>libdynamixel_ros</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>serial</build_depend>
   <build_depend>transmission_interface</build_depend>
   <build_depend>urdf</build_depend>
   <build_export_depend>controller_manager</build_export_depend>
+  <build_export_depend>dynamixel_workbench_toolbox</build_export_depend>
   <build_export_depend>hardware_interface</build_export_depend>
   <build_export_depend>joint_limits_interface</build_export_depend>
-  <build_export_depend>libdynamixel_ros</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>serial</build_export_depend>
   <build_export_depend>transmission_interface</build_export_depend>
   <build_export_depend>urdf</build_export_depend>
   <exec_depend>controller_manager</exec_depend>
+  <exec_depend>dynamixel_workbench_toolbox</exec_depend>
   <exec_depend>hardware_interface</exec_depend>
   <exec_depend>joint_limits_interface</exec_depend>
-  <exec_depend>libdynamixel_ros</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>serial</exec_depend>
   <exec_depend>transmission_interface</exec_depend>
