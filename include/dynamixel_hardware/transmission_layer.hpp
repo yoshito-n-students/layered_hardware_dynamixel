@@ -65,6 +65,7 @@ public:
                          << info.name_);
         return false;
       }
+      ROS_INFO_STREAM("TransmissionLayer::init(): Initialized " << info.name_);
     }
 
     return true;
