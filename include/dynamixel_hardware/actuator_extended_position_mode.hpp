@@ -20,13 +20,10 @@ public:
     // switch to extended-position mode & torque enable
     setOperatingModeAndTorqueOn(&DynamixelWorkbench::setExtendedPositionControlMode);
 
-    // read present position & use it as the initial position command
-    // TODO: instead, read goal position on dynamixel
-    //       and use it as the initial & prev position commands
-    readPosition();
-    data_->pos_cmd = data_->pos;
+    // use the dynamixel's present goal position as the initial position command
+    readPositionCommand();
     data_->vel_cmd = 0.; // use velocity limit in the dynamixel's control table
-    prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
+    prev_pos_cmd_ = data_->pos_cmd;
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
   }
 

@@ -2,6 +2,7 @@
 #define DYNAMIXEL_HARDWARE_ACTUATOR_OPERATING_MODE_BASE_HPP
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <string>
 
@@ -43,6 +44,17 @@ protected:
     } else {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readPosition(): Failed to read position from "
                        << data_->name << " (id: " << data_->id << ")");
+    }
+  }
+
+  void readPositionCommand() {
+    int32_t value;
+    if (data_->dxl_wb.itemRead(data_->id, "Goal_Position", &value)) {
+      data_->pos_cmd = data_->dxl_wb.convertValue2Radian(data_->id, value);
+    } else {
+      ROS_ERROR_STREAM(
+          "ActuatorOperatingModeBase::readPositionCommand(): Failed to read goal position from "
+          << data_->name << " (id: " << data_->id << ")");
     }
   }
 
