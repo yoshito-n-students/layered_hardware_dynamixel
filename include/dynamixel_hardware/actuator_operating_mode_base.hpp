@@ -162,7 +162,7 @@ protected:
 protected:
   const std::string name_;
   const ActuatorDataPtr data_;
-}; // namespace dynamixel_hardware
+};
 
 typedef boost::shared_ptr< ActuatorOperatingModeBase > ActuatorOperatingModePtr;
 typedef boost::shared_ptr< const ActuatorOperatingModeBase > ActuatorOperatingModeConstPtr;
