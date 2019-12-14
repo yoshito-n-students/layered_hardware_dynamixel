@@ -115,6 +115,8 @@ public:
         }
       }
     }
+    
+    return true;
   }
 
   void doSwitch(const std::list< hi::ControllerInfo > &starting_controller_list,
