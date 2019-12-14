@@ -1,3 +1,0 @@
-[submodule "libdynamixel_ros/libdynamixel"]
-	path = libdynamixel_ros/libdynamixel
-	url = git@github.com:yoshito-n-students/libdynamixel.git
