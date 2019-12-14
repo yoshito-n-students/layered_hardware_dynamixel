@@ -18,7 +18,7 @@ public:
 
   virtual void starting() {
     // switch to velocity mode
-    writeOperatingMode(dynamixel::OperatingMode::velocity);
+    setOperatingModeAndTorqueOn(&DynamixelWorkbench::setVelocityControlMode);
 
     // set reasonable initial command
     data_->vel_cmd = 0.;
@@ -33,6 +33,8 @@ public:
       prev_vel_cmd_ = data_->vel_cmd;
     }
   }
+
+  virtual void stopping() { torqueOff(); }
 
 private:
   double prev_vel_cmd_;

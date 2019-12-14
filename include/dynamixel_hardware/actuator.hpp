@@ -1,6 +1,7 @@
 #ifndef DYNAMIXEL_HARDWARE_ACTUATOR_HPP
 #define DYNAMIXEL_HARDWARE_ACTUATOR_HPP
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -34,7 +35,15 @@ class Actuator {
 public:
   Actuator() {}
 
-  virtual ~Actuator() {}
+  virtual ~Actuator() {
+    // finalize the present mode
+    if (present_mode_) {
+      ROS_INFO_STREAM("Actuator::~Actuator(): Stopping operating mode "
+                      << present_mode_->getName() << " for actuator " << data_->name);
+      present_mode_->stopping();
+      present_mode_ = ActuatorOperatingModePtr();
+    }
+  }
 
   bool init(const std::string &name, DynamixelWorkbench &dxl_wb, hi::RobotHW &hw,
             ros::NodeHandle &param_nh) {
@@ -47,8 +56,8 @@ public:
 
     // find dynamixel actuator by id
     uint16_t model_number;
-    if (!) {
-      ROS_ERROR_STREAM("Actuator::init(): Failed to find the actuator " << name << "(id: " << id
+    if (!dxl_wb.ping(id, &model_number)) {
+      ROS_ERROR_STREAM("Actuator::init(): Failed to ping the actuator " << name << "(id: " << id
                                                                         << ")");
       return false;
     }
@@ -62,7 +71,7 @@ public:
     }
 
     // allocate data structure
-    data_.reset(new ActuatorData(name, device, servo, torque_constant));
+    data_.reset(new ActuatorData(name, dxl_wb, id, torque_constant));
 
     // register actuator states & commands to corresponding hardware interfaces
     const hi::ActuatorStateHandle state_handle(data_->name, &data_->pos, &data_->vel, &data_->eff);
@@ -93,9 +102,6 @@ public:
       }
       mode_map_[mode_name.first] = mode;
     }
-
-    // set initial mode that does completely nothing
-    present_mode_ = ActuatorOperatingModePtr();
   }
 
   void doSwitch(const std::list< hi::ControllerInfo > &starting_controller_list,
@@ -109,7 +115,7 @@ public:
           ROS_INFO_STREAM("Actuator::doSwitch(): Stopping operating mode "
                           << present_mode_->getName() << " for actuator " << data_->name);
           present_mode_->stopping();
-          present_mode_.reset();
+          present_mode_ = ActuatorOperatingModePtr();
           break;
         }
       }

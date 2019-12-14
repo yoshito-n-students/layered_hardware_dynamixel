@@ -10,11 +10,6 @@
 #include <ros/duration.h>
 #include <ros/time.h>
 
-#include <dynamixel/errors.hpp>
-#include <dynamixel/operating_mode.hpp>
-#include <dynamixel/protocols/protocol2.hpp>
-#include <dynamixel/status_packet.hpp>
-
 #include <boost/shared_ptr.hpp>
 
 namespace dynamixel_hardware {
@@ -28,13 +23,13 @@ public:
 
   std::string getName() const { return name_; }
 
-  virtual void starting() {}
+  virtual void starting() = 0;
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) {}
+  virtual void read(const ros::Time &time, const ros::Duration &period) = 0;
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) {}
+  virtual void write(const ros::Time &time, const ros::Duration &period) = 0;
 
-  virtual void stopping() {}
+  virtual void stopping() = 0;
 
 protected:
   //
@@ -42,90 +37,35 @@ protected:
   //
 
   void readPosition() {
-    // send a request & receive a response
-    dynamixel::StatusPacket< dp::Protocol2 > status;
-    try {
-      data_->device.send(data_->servo->get_present_position_angle());
-      data_->device.recv(status);
-    } catch (const de::Error &err) {
+    float rad;
+    if (data_->dxl_wb.getRadian(data_->id, &rad)) {
+      data_->pos = rad;
+    } else {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readPosition(): Failed to read position from "
-                       << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
-      return;
-    }
-    // validate the response
-    if (!status.valid()) {
-      ROS_ERROR_STREAM("ActuatorOperatingModeBase::readPosition(): Invalid status packet received "
-                       "when reading position from "
-                       << data_->name << " (id: " << data_->servo->id() << ")");
-      return;
-    }
-    // extract the position from the response
-    try {
-      data_->pos = data_->servo->parse_present_position_angle(status);
-    } catch (const de::Error &err) {
-      ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readPosition(): Failed to unpack position packet from "
-          << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
-      return;
+                       << data_->name << " (id: " << data_->id << ")");
     }
   }
 
   void readVelocity() {
-    // send a request & receive a response
-    dynamixel::StatusPacket< dp::Protocol2 > status;
-    try {
-      data_->device.send(data_->servo->get_present_speed());
-      data_->device.recv(status);
-    } catch (const de::Error &err) {
+    float radps;
+    if (data_->dxl_wb.getVelocity(data_->id, &radps)) {
+      data_->vel = radps;
+    } else {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readVelocity(): Failed to read velocity from "
-                       << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
-      return;
-    }
-    // validate the response
-    if (!status.valid()) {
-      ROS_ERROR_STREAM("ActuatorOperatingModeBase::readVelocity(): Invalid status packet received "
-                       "when reading velocity from "
-                       << data_->name << " (id: " << data_->servo->id() << ")");
-      return;
-    }
-    // extract the velocity from the response
-    try {
-      data_->vel = data_->servo->parse_joint_speed(status);
-    } catch (const de::Error &err) {
-      ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readVelocity(): Failed to unpack velocity packet from "
-          << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
-      return;
+                       << data_->name << " (id: " << data_->id << ")");
     }
   }
 
   void readEffort() {
-    // send a request & receive a response
-    dynamixel::StatusPacket< dp::Protocol2 > status;
-    try {
-      data_->device.send(data_->servo->get_present_current());
-      data_->device.recv(status);
-    } catch (const de::Error &err) {
+    int32_t value;
+    // TODO:
+    if (data_->dxl_wb.itemRead(data_->id, "Present_Current", &value)) {
+      // TODO: use the latest API
+      data_->eff =
+          data_->dxl_wb.convertValue2Current(/* data_->id,*/ value) * data_->torque_constant;
+    } else {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readEffort(): Failed to read current from "
-                       << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
-      return;
-    }
-    // validate the response
-    if (!status.valid()) {
-      ROS_ERROR_STREAM("ActuatorOperatingModeBase::readEffort(): Invalid status packet received "
-                       "when reading current from "
-                       << data_->name << " (id: " << data_->servo->id() << ")");
-      return;
-    }
-    // extract the current from the response
-    try {
-      data_->eff = static_cast< int16_t >(data_->servo->parse_present_current(status)) *
-                   data_->torque_constant;
-    } catch (const de::Error &err) {
-      ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readEffort(): Failed to unpack current packet from "
-          << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
-      return;
+                       << data_->name << " (id: " << data_->id << ")");
     }
   }
 
@@ -139,70 +79,62 @@ protected:
   // write functions for child classes
   //
 
-  void writeTorqueEnable(const bool value) {
-    try {
-      dynamixel::StatusPacket< dp::Protocol2 > status;
-      data_->device.send(data_->servo->set_torque_enable(value));
-      data_->device.recv(status);
-    } catch (const de::Error &err) {
+  void setOperatingModeAndTorqueOn(bool (DynamixelWorkbench::*const set_func)(uint8_t,
+                                                                              const char **)) {
+    if (!(data_->dxl_wb.*set_func)(data_->id, NULL)) {
+      ROS_ERROR_STREAM("ActuatorOperatingModeBase::setOperatingModeAndTorqueOn(): Failed to set "
+                       "operating mode of "
+                       << data_->name << " (id: " << data_->id << ")");
+      return;
+    }
+    if (!data_->dxl_wb.torqueOn(data_->id)) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::writeTorqueEnable(): Failed to write torque-enable ("
-          << value << ") to " << data_->name << " (id: " << data_->servo->id() << ")");
+          "ActuatorOperatingModeBase::setOperatingModeAndTorqueOn(): Failed to enable torque of "
+          << data_->name << " (id: " << data_->id << ")");
       return;
     }
   }
 
-  void writeOperatingMode(const dynamixel::OperatingMode &value) {
-    try {
-      dynamixel::StatusPacket< dp::Protocol2 > status;
-      data_->device.send(data_->servo->set_operating_mode(static_cast< long long >(value)));
-      data_->device.recv(status);
-    } catch (const de::Error &err) {
-      ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::writePositionCommand(): Failed to write operating mode ("
-          << dynamixel::mode2str(value) << ") to " << data_->name << " (id: " << data_->servo->id()
-          << ")");
-      return;
+  void torqueOff() {
+    if (!data_->dxl_wb.torqueOff(data_->id)) {
+      ROS_ERROR_STREAM("ActuatorOperatingModeBase::torqueOff(): Failed to disable torque of "
+                       << data_->name << " (id: " << data_->id << ")");
     }
   }
 
   void writePositionCommand() {
-    try {
-      dynamixel::StatusPacket< dp::Protocol2 > status;
-      data_->device.send(data_->servo->set_goal_position_angle(data_->pos_cmd));
-      data_->device.recv(status);
-    } catch (const de::Error &err) {
+    if (!data_->dxl_wb.goalPosition(data_->id, static_cast< float >(data_->pos_cmd))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writePositionCommand(): Failed to write position command to "
-          << data_->name << " (id: " << data_->servo->id() << ")");
-      return;
+          << data_->name << " (id: " << data_->id << ")");
     }
   }
 
   void writeVelocityCommand() {
-    try {
-      dynamixel::StatusPacket< dp::Protocol2 > status;
-      data_->device.send(data_->servo->set_moving_speed_angle(data_->vel_cmd));
-      data_->device.recv(status);
-    } catch (const de::Error &err) {
+    if (!data_->dxl_wb.goalVelocity(data_->id, static_cast< float >(data_->vel_cmd))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeVelocityCommand(): Failed to write velocity command to "
-          << data_->name << " (id: " << data_->servo->id() << ")");
-      return;
+          << data_->name << " (id: " << data_->id << ")");
+    }
+  }
+
+  void writeProfileVelocity() {
+    if (!data_->dxl_wb.itemWrite(data_->id, "Profile_Velocity",
+                                 data_->dxl_wb.convertVelocity2Value(data_->id, data_->vel_cmd))) {
+      ROS_ERROR_STREAM(
+          "ActuatorOperatingModeBase::writeProfileVelocity(): Failed to write profile velocity to "
+          << data_->name << " (id: " << data_->id << ")");
     }
   }
 
   void writeEffortCommand() {
-    try {
-      dynamixel::StatusPacket< dp::Protocol2 > status;
-      data_->device.send(data_->servo->set_goal_current(static_cast< uint16_t >(
-          static_cast< int16_t >(data_->eff_cmd / data_->torque_constant))));
-      data_->device.recv(status);
-    } catch (const de::Error &err) {
+    if (!data_->dxl_wb.itemWrite(data_->id, "Goal_Current",
+                                 // TODO: use the latest API
+                                 data_->dxl_wb.convertCurrent2Value(
+                                     /* data_->id, */ data_->eff_cmd / data_->torque_constant))) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::writeEffortCommand(): Failed to write effort command to "
-          << data_->name << " (id: " << data_->servo->id() << ")");
-      return;
+          "ActuatorOperatingModeBase::writeEffortCommand(): Failed to write current command to "
+          << data_->name << " (id: " << data_->id << ")");
     }
   }
 
@@ -218,7 +150,7 @@ protected:
 protected:
   const std::string name_;
   const ActuatorDataPtr data_;
-};
+}; // namespace dynamixel_hardware
 
 typedef boost::shared_ptr< ActuatorOperatingModeBase > ActuatorOperatingModePtr;
 typedef boost::shared_ptr< const ActuatorOperatingModeBase > ActuatorOperatingModeConstPtr;

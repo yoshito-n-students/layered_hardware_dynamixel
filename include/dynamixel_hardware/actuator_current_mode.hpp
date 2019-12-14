@@ -17,7 +17,7 @@ public:
 
   virtual void starting() {
     // switch to current mode
-    writeOperatingMode(dynamixel::OperatingMode::current);
+    setOperatingModeAndTorqueOn(&DynamixelWorkbench::setCurrentControlMode);
 
     // set reasonable initial command
     data_->eff_cmd = 0.;
@@ -32,6 +32,8 @@ public:
       prev_eff_cmd_ = data_->eff_cmd;
     }
   }
+
+  virtual void stopping() { torqueOff(); }
 
 private:
   double prev_eff_cmd_;

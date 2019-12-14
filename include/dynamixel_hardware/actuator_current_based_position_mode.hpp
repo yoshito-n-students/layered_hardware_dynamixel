@@ -9,8 +9,6 @@
 #include <ros/duration.h>
 #include <ros/time.h>
 
-#include <dynamixel/operating_mode.hpp>
-
 namespace dynamixel_hardware {
 
 class ActuatorCurrentBasedPositionMode : public ActuatorOperatingModeBase {
@@ -20,7 +18,7 @@ public:
 
   virtual void starting() {
     // switch to current-based position mode
-    writeOperatingMode(dynamixel::OperatingMode::current_based_position);
+    setOperatingModeAndTorqueOn(&DynamixelWorkbench::setCurrentBasedPositionControlMode);
 
     // read present position & use it as the initial position command
     // TODO: instead, read goal position on dynamixel
@@ -46,7 +44,7 @@ public:
       prev_pos_cmd_ = data_->pos_cmd;
     }
     if (areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
-      // writeProfileVelocity();
+      writeProfileVelocity();
       prev_vel_cmd_ = data_->vel_cmd;
     }
     if (areNotEqual(data_->eff_cmd, prev_eff_cmd_)) {
@@ -55,9 +53,7 @@ public:
     }
   }
 
-  virtual void stopping() {
-    // nothing to do
-  }
+  virtual void stopping() { torqueOff(); }
 
 private:
   double prev_pos_cmd_, prev_vel_cmd_, prev_eff_cmd_;

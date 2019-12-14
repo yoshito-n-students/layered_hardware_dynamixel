@@ -14,10 +14,7 @@ public:
   ActuatorTorqueDisableMode(const ActuatorDataPtr &data)
       : ActuatorOperatingModeBase("torque_disable", data) {}
 
-  virtual void starting() {
-    // torque disable
-    writeTorqueEnable(false);
-  }
+  virtual void starting() { torqueOff(); }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
     // read pos, vel & eff

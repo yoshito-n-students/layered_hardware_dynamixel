@@ -7,10 +7,6 @@
 #include <ros/duration.h>
 #include <ros/time.h>
 
-#include <dynamixel/instruction_packet.hpp>
-#include <dynamixel/instructions/reboot.hpp>
-#include <dynamixel/protocols/protocol2.hpp>
-
 namespace dynamixel_hardware {
 
 class ActuatorRebootMode : public ActuatorOperatingModeBase {
@@ -18,17 +14,11 @@ public:
   ActuatorRebootMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase("reboot", data) {}
 
   virtual void starting() {
-    try {
-      data_->device.send(di::Reboot< dp::Protocol2 >(data_->servo->id()));
-      dynamixel::StatusPacket< dp::Protocol2 > status;
-      data_->device.recv(status);
-    } catch (const de::Error &err) {
+    if (!data_->dxl_wb.reboot(data_->id)) {
       ROS_ERROR_STREAM("ActuatorRebootMode::starting(): Failed to reboot "
-                       << data_->name << " (id: " << data_->servo->id() << "): " << err.msg());
-      return;
+                       << data_->name << " (id: " << data_->id << ")");
     }
-
-    // TODO: confirm reset by ping ??
+    // TODO: ping to wait rebooted ??
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
