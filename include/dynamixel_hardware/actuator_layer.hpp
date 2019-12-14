@@ -60,6 +60,7 @@ public:
       if (!ator->init(ator_param.first, dxl_wb_, hw, ator_param_nh)) {
         return false;
       }
+      ROS_INFO_STREAM("ActuatorLayer::init(): Initialized " << ator_param.first);
       actuators_.push_back(ator);
     }
 
