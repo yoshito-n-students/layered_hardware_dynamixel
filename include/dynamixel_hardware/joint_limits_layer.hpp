@@ -7,6 +7,7 @@
 #include <dynamixel_hardware/common_namespaces.hpp>
 #include <dynamixel_hardware/layer_base.hpp>
 #include <hardware_interface/controller_info.h>
+#include <hardware_interface/internal/demangle_symbol.h>
 #include <hardware_interface/robot_hw.h>
 #include <joint_limits_interface/joint_limits_interface.h>
 #include <joint_limits_interface/joint_limits_urdf.h>
@@ -46,6 +47,8 @@ public:
         hw, urdf_model, vel_iface_);
     tieJointsAndLimits< hi::EffortJointInterface, jli::EffortJointSaturationHandle >(hw, urdf_model,
                                                                                      eff_iface_);
+
+    return true;
   }
 
   virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
@@ -87,6 +90,9 @@ private:
         continue;
       }
       // register new associated pair
+      ROS_INFO_STREAM("JointLimitsLayer::init(): Initialized "
+                      << hi::internal::demangledTypeName< SaturationHandle >() << " for "
+                      << hw_jnt_name);
       sat_iface.registerHandle(SaturationHandle(cmd_iface->getHandle(hw_jnt_name), limits));
     }
   }
