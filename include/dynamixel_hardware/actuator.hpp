@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 
+#include <dynamixel_hardware/actuator_clear_multi_turn_mode.hpp>
 #include <dynamixel_hardware/actuator_current_based_position_mode.hpp>
 #include <dynamixel_hardware/actuator_current_mode.hpp>
 #include <dynamixel_hardware/actuator_data.hpp>
@@ -115,7 +116,7 @@ public:
         }
       }
     }
-    
+
     return true;
   }
 
@@ -177,7 +178,9 @@ private:
   }
 
   ActuatorOperatingModePtr makeOperatingMode(const std::string &mode_str) {
-    if (mode_str == "current") {
+    if (mode_str == "clear_multi_turn") {
+      return boost::make_shared< ActuatorClearMultiTurnMode >(data_);
+    } else if (mode_str == "current") {
       return boost::make_shared< ActuatorCurrentMode >(data_);
     } else if (mode_str == "current_based_position") {
       return boost::make_shared< ActuatorCurrentBasedPositionMode >(data_);
