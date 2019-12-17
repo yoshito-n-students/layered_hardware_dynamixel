@@ -11,12 +11,14 @@
     <transmission name="example_joint_transmission">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="example_joint">
+            <hardwareInterface>hardware_interface/PosVelJointInterface</hardwareInterface>
+            <hardwareInterface>hardware_interface_extensions/PosVelEffJointInterface</hardwareInterface>
             <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
             <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
             <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         </joint>
         <actuator name="example_actuator">
-            <mechanicalReduction>50</mechanicalReduction>
+            <mechanicalReduction>1</mechanicalReduction>
         </actuator>
     </transmission>
 

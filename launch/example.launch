@@ -7,20 +7,20 @@
     <node name="example_dynamixel_hardware_node" pkg="dynamixel_hardware" type="dynamixel_hardware_node" output="screen">
         <rosparam>
             control_frequency: 20
-            serial_interface: /dev/ttyUSB0
+            serial_interface: /dev/ttyS3
             baudrate: 1000000
             actuators:
                 example_actuator:
-                    id: 0
-                    torque_constant: 1.0
+                    id: 1
+                    torque_constant: 8.0945e-3
                     operating_mode_map:
+                        example_joint_posveleff_controller: current_based_position
+                        example_joint_posvel_controller: extended_position
                         example_joint_position_controller: extended_position
                         example_joint_velocity_controller: velocity
                         example_joint_effort_controller: current
+                        example_joint_clear_multi_turn_controller: clear_multi_turn
                         example_joint_reboot_controller: reboot
-                    initial_control_table:
-                        Velocity_Limit: 100
-                        Current_Limit: 100
         </rosparam>
     </node>
 
@@ -29,6 +29,12 @@
         joint_state_controller:
             type: joint_state_controller/JointStateController
             publish_rate: 20
+        example_joint_posveleff_controller:
+            type: posveleff_controllers/JointPosVelEffController
+            joint: example_joint
+        example_joint_posvel_controller:
+            type: posvel_controllers/JointPosVelController
+            joint: example_joint
         example_joint_position_controller:
             type: position_controllers/JointPositionController
             joint: example_joint
@@ -38,6 +44,10 @@
         example_joint_effort_controller:
             type: effort_controllers/JointEffortController
             joint: example_joint
+        example_joint_reboot_controller:
+            type: empty_controller/EmptyController
+        example_joint_clear_multi_turn_controller:
+            type: empty_controller/EmptyController
     </rosparam>
 
     <!-- Controller starter -->
