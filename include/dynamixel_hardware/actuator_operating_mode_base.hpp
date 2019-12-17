@@ -43,7 +43,7 @@ protected:
       data_->pos = rad;
     } else {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readPosition(): Failed to read position from "
-                       << data_->name << " (id: " << data_->id << ")");
+                       << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -54,7 +54,7 @@ protected:
     } else {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::readPositionCommand(): Failed to read goal position from "
-          << data_->name << " (id: " << data_->id << ")");
+          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -64,7 +64,7 @@ protected:
       data_->vel = radps;
     } else {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readVelocity(): Failed to read velocity from "
-                       << data_->name << " (id: " << data_->id << ")");
+                       << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -77,7 +77,7 @@ protected:
           data_->dxl_wb.convertValue2Current(/* data_->id,*/ value) * data_->torque_constant;
     } else {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readEffort(): Failed to read current from "
-                       << data_->name << " (id: " << data_->id << ")");
+                       << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -96,13 +96,13 @@ protected:
     if (!(data_->dxl_wb.*set_func)(data_->id, NULL)) {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::setOperatingModeAndTorqueOn(): Failed to set "
                        "operating mode of "
-                       << data_->name << " (id: " << data_->id << ")");
+                       << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
       return;
     }
     if (!data_->dxl_wb.torqueOn(data_->id)) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::setOperatingModeAndTorqueOn(): Failed to enable torque of "
-          << data_->name << " (id: " << data_->id << ")");
+          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
       return;
     }
   }
@@ -110,7 +110,7 @@ protected:
   void torqueOff() {
     if (!data_->dxl_wb.torqueOff(data_->id)) {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::torqueOff(): Failed to disable torque of "
-                       << data_->name << " (id: " << data_->id << ")");
+                       << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -118,7 +118,7 @@ protected:
     if (!data_->dxl_wb.goalPosition(data_->id, static_cast< float >(data_->pos_cmd))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writePositionCommand(): Failed to write position command to "
-          << data_->name << " (id: " << data_->id << ")");
+          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -126,7 +126,7 @@ protected:
     if (!data_->dxl_wb.goalVelocity(data_->id, static_cast< float >(data_->vel_cmd))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeVelocityCommand(): Failed to write velocity command to "
-          << data_->name << " (id: " << data_->id << ")");
+          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -135,7 +135,7 @@ protected:
                                  data_->dxl_wb.convertVelocity2Value(data_->id, data_->vel_cmd))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeProfileVelocity(): Failed to write profile velocity to "
-          << data_->name << " (id: " << data_->id << ")");
+          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -146,7 +146,7 @@ protected:
                                      /* data_->id, */ data_->eff_cmd / data_->torque_constant))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeEffortCommand(): Failed to write current command to "
-          << data_->name << " (id: " << data_->id << ")");
+          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 

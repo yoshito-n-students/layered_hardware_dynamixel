@@ -57,8 +57,8 @@ public:
     // find dynamixel actuator by id
     uint16_t model_number;
     if (!dxl_wb.ping(id, &model_number)) {
-      ROS_ERROR_STREAM("Actuator::init(): Failed to ping the actuator " << name << "(id: " << id
-                                                                        << ")");
+      ROS_ERROR_STREAM("Actuator::init(): Failed to ping the actuator "
+                       << name << "(id: " << static_cast< int >(id) << ")");
       return false;
     }
 
