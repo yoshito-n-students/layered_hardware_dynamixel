@@ -54,13 +54,15 @@ public:
     }
 
     // init actuators with param "actuators/<actuator_name>"
-    BOOST_FOREACH (const XmlRpc::XmlRpcValue::ValueStruct::value_type &ator_param, ators_param) {
+    // (could not use BOOST_FOREACH here to avoid a bug in the library in Kinetic)
+    for (XmlRpc::XmlRpcValue::iterator ator_param = ators_param.begin();
+         ator_param != ators_param.end(); ++ator_param) {
       ActuatorPtr ator(new Actuator());
-      ros::NodeHandle ator_param_nh(param_nh, ros::names::append("actuators", ator_param.first));
-      if (!ator->init(ator_param.first, dxl_wb_, hw, ator_param_nh)) {
+      ros::NodeHandle ator_param_nh(param_nh, ros::names::append("actuators", ator_param->first));
+      if (!ator->init(ator_param->first, dxl_wb_, hw, ator_param_nh)) {
         return false;
       }
-      ROS_INFO_STREAM("ActuatorLayer::init(): Initialized " << ator_param.first);
+      ROS_INFO_STREAM("ActuatorLayer::init(): Initialized " << ator_param->first);
       actuators_.push_back(ator);
     }
 
