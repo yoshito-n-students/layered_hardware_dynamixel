@@ -23,10 +23,12 @@ int main(int argc, char *argv[]) {
   spinner.start();
 
   ros::Rate rate(pnh.param("control_frequency", 10));
+  // workaround for clock-jump in some environments
+  const bool use_expected_period(pnh.param("use_expected_period", false));
   ros::Time prev_time(ros::Time::now());
   while (ros::ok()) {
     const ros::Time time(ros::Time::now());
-    const ros::Duration period(time - prev_time);
+    const ros::Duration period(use_expected_period ? rate.expectedCycleTime() : time - prev_time);
     hw.read(time, period);
     cm.update(time, period);
     hw.write(time, period);

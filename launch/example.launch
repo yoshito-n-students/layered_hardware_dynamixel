@@ -7,6 +7,7 @@
     <node name="example_dynamixel_hardware_node" pkg="dynamixel_hardware" type="dynamixel_hardware_node" output="screen">
         <rosparam>
             control_frequency: 20
+            use_expected_period: true
             serial_interface: /dev/ttyS3
             baudrate: 1000000
             actuators:
