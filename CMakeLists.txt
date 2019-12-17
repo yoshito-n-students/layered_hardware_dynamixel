@@ -13,7 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
   hardware_interface
   joint_limits_interface
   roscpp
-  serial
   transmission_interface
   urdf
 )
@@ -110,7 +109,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES dynamixel_hardware
-  CATKIN_DEPENDS controller_manager dynamixel_workbench_toolbox hardware_interface joint_limits_interface roscpp serial transmission_interface urdf
+  CATKIN_DEPENDS controller_manager dynamixel_workbench_toolbox hardware_interface joint_limits_interface roscpp transmission_interface urdf
 #  DEPENDS system_lib
 )
 
@@ -124,6 +123,8 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
+
+add_compile_options(-std=c++11)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
