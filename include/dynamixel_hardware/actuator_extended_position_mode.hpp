@@ -20,10 +20,10 @@ public:
     // switch to extended-position mode & torque enable
     setOperatingModeAndTorqueOn(&DynamixelWorkbench::setExtendedPositionControlMode);
 
-    // use the dynamixel's present goal position as the initial position command
-    readPositionCommand();
-    data_->vel_cmd = 0.; // use velocity limit in the dynamixel's control table
-    prev_pos_cmd_ = data_->pos_cmd;
+    // use the present position as the initial command
+    data_->pos_cmd = data_->pos;
+    prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
+    data_->vel_cmd = 0.;
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
   }
 
@@ -34,11 +34,11 @@ public:
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
     // send position command if updated
-    if (areNotEqual(data_->pos_cmd, prev_pos_cmd_)) {
+    if (isNotNaN(data_->pos_cmd) && areNotEqual(data_->pos_cmd, prev_pos_cmd_)) {
       writePositionCommand();
       prev_pos_cmd_ = data_->pos_cmd;
     }
-    if (areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
+    if (isNotNaN(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
       writeProfileVelocity();
       prev_vel_cmd_ = data_->vel_cmd;
     }

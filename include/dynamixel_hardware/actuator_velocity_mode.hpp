@@ -28,7 +28,7 @@ public:
   virtual void read(const ros::Time &time, const ros::Duration &period) { readState(); }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
-    if (areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
+    if (isNotNaN(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
       writeVelocityCommand();
       prev_vel_cmd_ = data_->vel_cmd;
     }

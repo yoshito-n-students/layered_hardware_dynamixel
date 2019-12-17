@@ -11,6 +11,7 @@
 #include <ros/duration.h>
 #include <ros/time.h>
 
+#include <boost/math/special_functions/fpclassify.hpp> // for isnan()
 #include <boost/shared_ptr.hpp>
 
 namespace dynamixel_hardware {
@@ -44,17 +45,6 @@ protected:
     } else {
       ROS_ERROR_STREAM("ActuatorOperatingModeBase::readPosition(): Failed to read position from "
                        << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
-    }
-  }
-
-  void readPositionCommand() {
-    int32_t value;
-    if (data_->dxl_wb.itemRead(data_->id, "Goal_Position", &value)) {
-      data_->pos_cmd = data_->dxl_wb.convertValue2Radian(data_->id, value);
-    } else {
-      ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::readPositionCommand(): Failed to read goal position from "
-          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -153,6 +143,8 @@ protected:
   //
   // utility
   //
+
+  static bool isNotNaN(const double a) { return !boost::math::isnan(a); }
 
   static bool areNotEqual(const double a, const double b) {
     // does !(|a - b| < EPS) instead of (|a - b| >= EPS) to return True when a and/or b is NaN
