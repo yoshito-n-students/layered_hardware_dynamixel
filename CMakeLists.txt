@@ -124,8 +124,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_compile_options(-std=c++11)
-
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/dynamixel_hardware.cpp
