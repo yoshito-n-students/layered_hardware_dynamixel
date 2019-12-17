@@ -1,11 +1,11 @@
 #ifndef DYNAMIXEL_HARDWARE_ACTUATOR_DATA_HPP
 #define DYNAMIXEL_HARDWARE_ACTUATOR_DATA_HPP
 
-#include <cstdint>
 #include <string>
 
 #include <dynamixel_workbench_toolbox/dynamixel_workbench.h>
 
+#include <boost/cstdint.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace dynamixel_hardware {

@@ -2,7 +2,6 @@
 #define DYNAMIXEL_HARDWARE_ACTUATOR_OPERATING_MODE_BASE_HPP
 
 #include <cmath>
-#include <cstdint>
 #include <limits>
 #include <string>
 
@@ -11,6 +10,7 @@
 #include <ros/duration.h>
 #include <ros/time.h>
 
+#include <boost/cstdint.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> // for isnan()
 #include <boost/shared_ptr.hpp>
 

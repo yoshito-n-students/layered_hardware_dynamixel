@@ -1,7 +1,6 @@
 #ifndef DYNAMIXEL_HARDWARE_ACTUATOR_HPP
 #define DYNAMIXEL_HARDWARE_ACTUATOR_HPP
 
-#include <cstdint>
 #include <list>
 #include <map>
 #include <string>
@@ -25,6 +24,7 @@
 #include <ros/node_handle.h>
 #include <ros/time.h>
 
+#include <boost/cstdint.hpp>
 #include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
