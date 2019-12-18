@@ -108,7 +108,8 @@ protected:
     if (!data_->dxl_wb.goalPosition(data_->id, static_cast< float >(data_->pos_cmd))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writePositionCommand(): Failed to write position command to "
-          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
+          << data_->name << " (command: " << data_->pos_cmd
+          << ", id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -116,27 +117,32 @@ protected:
     if (!data_->dxl_wb.goalVelocity(data_->id, static_cast< float >(data_->vel_cmd))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeVelocityCommand(): Failed to write velocity command to "
-          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
+          << data_->name << " (command: " << data_->vel_cmd
+          << ", id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
   void writeProfileVelocity() {
+    const double prof_vel_cmd(std::abs(data_->vel_cmd));
     if (!data_->dxl_wb.itemWrite(data_->id, "Profile_Velocity",
-                                 data_->dxl_wb.convertVelocity2Value(data_->id, data_->vel_cmd))) {
+                                 data_->dxl_wb.convertVelocity2Value(data_->id, prof_vel_cmd))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeProfileVelocity(): Failed to write profile velocity to "
-          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
+          << data_->name << " (command: " << prof_vel_cmd
+          << ", id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
   void writeEffortCommand() {
+    const double cur_cmd(data_->eff_cmd / data_->torque_constant);
     if (!data_->dxl_wb.itemWrite(data_->id, "Goal_Current",
                                  // TODO: use the latest API
                                  data_->dxl_wb.convertCurrent2Value(
-                                     /* data_->id, */ data_->eff_cmd / data_->torque_constant))) {
+                                     /* data_->id, */ cur_cmd))) {
       ROS_ERROR_STREAM(
           "ActuatorOperatingModeBase::writeEffortCommand(): Failed to write current command to "
-          << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
+          << data_->name << " (command: " << cur_cmd << ", id: " << static_cast< int >(data_->id)
+          << ")");
     }
   }
 
