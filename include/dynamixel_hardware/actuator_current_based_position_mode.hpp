@@ -21,6 +21,7 @@ public:
     setOperatingModeAndTorqueOn(&DynamixelWorkbench::setCurrentBasedPositionControlMode);
 
     // use the present position as the initial position command
+    readState();
     data_->pos_cmd = data_->pos;
     data_->vel_cmd = 0.; // use velocity limit in the dynamixel's control table
     data_->eff_cmd = 0.; // use torque limit in the dynamixel's control table

@@ -21,6 +21,7 @@ public:
     setOperatingModeAndTorqueOn(&DynamixelWorkbench::setExtendedPositionControlMode);
 
     // use the present position as the initial command
+    readState();
     data_->pos_cmd = data_->pos;
     prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
     data_->vel_cmd = 0.;
