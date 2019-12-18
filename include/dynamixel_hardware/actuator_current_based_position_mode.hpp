@@ -37,10 +37,6 @@ public:
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
     // write commands
-    if (isNotNaN(data_->pos_cmd) && areNotEqual(data_->pos_cmd, prev_pos_cmd_)) {
-      writePositionCommand();
-      prev_pos_cmd_ = data_->pos_cmd;
-    }
     if (isNotNaN(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
       writeProfileVelocity();
       prev_vel_cmd_ = data_->vel_cmd;
@@ -48,6 +44,10 @@ public:
     if (isNotNaN(data_->eff_cmd) && areNotEqual(data_->eff_cmd, prev_eff_cmd_)) {
       writeEffortCommand();
       prev_eff_cmd_ = data_->eff_cmd;
+    }
+    if (isNotNaN(data_->pos_cmd) && areNotEqual(data_->pos_cmd, prev_pos_cmd_)) {
+      writePositionCommand();
+      prev_pos_cmd_ = data_->pos_cmd;
     }
   }
 

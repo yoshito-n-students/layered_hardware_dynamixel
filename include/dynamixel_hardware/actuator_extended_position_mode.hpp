@@ -35,13 +35,13 @@ public:
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
     // send position command if updated
-    if (isNotNaN(data_->pos_cmd) && areNotEqual(data_->pos_cmd, prev_pos_cmd_)) {
-      writePositionCommand();
-      prev_pos_cmd_ = data_->pos_cmd;
-    }
     if (isNotNaN(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
       writeProfileVelocity();
       prev_vel_cmd_ = data_->vel_cmd;
+    }
+    if (isNotNaN(data_->pos_cmd) && areNotEqual(data_->pos_cmd, prev_pos_cmd_)) {
+      writePositionCommand();
+      prev_pos_cmd_ = data_->pos_cmd;
     }
   }
 
