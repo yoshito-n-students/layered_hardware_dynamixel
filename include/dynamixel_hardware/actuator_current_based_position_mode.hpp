@@ -2,6 +2,8 @@
 #define DYNAMIXEL_HARDWARE_ACTUATOR_CURRENT_BASED_POSITION_MODE_HPP
 
 #include <limits>
+#include <map>
+#include <string>
 
 #include <dynamixel_hardware/actuator_data.hpp>
 #include <dynamixel_hardware/actuator_operating_mode_base.hpp>
@@ -13,12 +15,15 @@ namespace dynamixel_hardware {
 
 class ActuatorCurrentBasedPositionMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorCurrentBasedPositionMode(const ActuatorDataPtr &data)
+  ActuatorCurrentBasedPositionMode(const ActuatorDataPtr &data,
+                                   const std::map< std::string, int > &item_map)
       : ActuatorOperatingModeBase("current_based_position", data) {}
 
   virtual void starting() {
     // switch to current-based position mode
     setOperatingModeAndTorqueOn(&DynamixelWorkbench::setCurrentBasedPositionControlMode);
+
+    writeItems(item_map_);
 
     // use the present position as the initial position command
     readState();
@@ -54,6 +59,7 @@ public:
   virtual void stopping() { torqueOff(); }
 
 private:
+  const std::map< std::string, int > item_map_;
   double prev_pos_cmd_, prev_vel_cmd_, prev_eff_cmd_;
 };
 } // namespace dynamixel_hardware

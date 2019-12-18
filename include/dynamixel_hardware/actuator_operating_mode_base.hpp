@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <limits>
+#include <map>
 #include <string>
 
 #include <dynamixel_hardware/actuator_data.hpp>
@@ -94,6 +95,17 @@ protected:
           "ActuatorOperatingModeBase::setOperatingModeAndTorqueOn(): Failed to enable torque of "
           << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
       return;
+    }
+  }
+
+  void writeItems(const std::map< std::string, int > &item_map) {
+    typedef std::map< std::string, int > ItemMap;
+    BOOST_FOREACH (const ItemMap::value_type item, item_map) {
+      if (!data_->dxl_wb.itemWrite(data_->id, item.first.c_str(),
+                                   static_cast< int32_t >(item.second))) {
+        ROS_ERROR_STREAM("ActuatorOperatingModeBase::writeItems(): Failed to write control item "
+                         << item.first << " of " << data_->name << " to " << item.second);
+      }
     }
   }
 

@@ -2,6 +2,8 @@
 #define DYNAMIXEL_HARDWARE_ACTUATOR_EXTENDED_POSITION_MODE_HPP
 
 #include <limits>
+#include <map>
+#include <string>
 
 #include <dynamixel_hardware/actuator_data.hpp>
 #include <dynamixel_hardware/actuator_operating_mode_base.hpp>
@@ -13,12 +15,15 @@ namespace dynamixel_hardware {
 
 class ActuatorExtendedPositionMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorExtendedPositionMode(const ActuatorDataPtr &data)
-      : ActuatorOperatingModeBase("extended_position", data) {}
+  ActuatorExtendedPositionMode(const ActuatorDataPtr &data,
+                               const std::map< std::string, int > &item_map)
+      : ActuatorOperatingModeBase("extended_position", data), item_map_(item_map) {}
 
   virtual void starting() {
     // switch to extended-position mode & torque enable
     setOperatingModeAndTorqueOn(&DynamixelWorkbench::setExtendedPositionControlMode);
+
+    writeItems(item_map_);
 
     // use the present position as the initial command
     readState();
@@ -48,6 +53,7 @@ public:
   virtual void stopping() { torqueOff(); }
 
 private:
+  const std::map< std::string, int > item_map_;
   double prev_pos_cmd_, prev_vel_cmd_;
 };
 } // namespace dynamixel_hardware

@@ -1,8 +1,9 @@
 #ifndef DYNAMIXEL_HARDWARE_ACTUATOR_VELOCITY_MODE_HPP
 #define DYNAMIXEL_HARDWARE_ACTUATOR_VELOCITY_MODE_HPP
 
-#include <cmath>
 #include <limits>
+#include <map>
+#include <string>
 
 #include <dynamixel_hardware/actuator_data.hpp>
 #include <dynamixel_hardware/actuator_operating_mode_base.hpp>
@@ -14,12 +15,15 @@ namespace dynamixel_hardware {
 
 class ActuatorVelocityMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorVelocityMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase("velocity", data) {}
+  ActuatorVelocityMode(const ActuatorDataPtr &data, const std::map< std::string, int > &item_map)
+      : ActuatorOperatingModeBase("velocity", data), item_map_(item_map) {}
 
   virtual void starting() {
     // switch to velocity mode
     setOperatingModeAndTorqueOn(&DynamixelWorkbench::setVelocityControlMode);
 
+    writeItems(item_map_);
+    
     // set reasonable initial command
     data_->vel_cmd = 0.;
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
@@ -37,6 +41,7 @@ public:
   virtual void stopping() { torqueOff(); }
 
 private:
+  const std::map< std::string, int > item_map_;
   double prev_vel_cmd_;
 };
 } // namespace dynamixel_hardware

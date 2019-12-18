@@ -2,6 +2,8 @@
 #define DYNAMIXEL_HARDWARE_ACTUATOR_CURRNET_MODE_HPP
 
 #include <limits>
+#include <map>
+#include <string>
 
 #include <dynamixel_hardware/actuator_data.hpp>
 #include <dynamixel_hardware/actuator_operating_mode_base.hpp>
@@ -13,7 +15,8 @@ namespace dynamixel_hardware {
 
 class ActuatorCurrentMode : public ActuatorOperatingModeBase {
 public:
-  ActuatorCurrentMode(const ActuatorDataPtr &data) : ActuatorOperatingModeBase("current", data) {}
+  ActuatorCurrentMode(const ActuatorDataPtr &data, const std::map< std::string, int > &item_map)
+      : ActuatorOperatingModeBase("current", data), item_map_(item_map) {}
 
   virtual void starting() {
     // switch to current mode
@@ -36,6 +39,7 @@ public:
   virtual void stopping() { torqueOff(); }
 
 private:
+  const std::map< std::string, int > item_map_;
   double prev_eff_cmd_;
 };
 } // namespace dynamixel_hardware

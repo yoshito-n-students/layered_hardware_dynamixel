@@ -21,6 +21,7 @@
 #include <hardware_interface/robot_hw.h>
 #include <ros/console.h>
 #include <ros/duration.h>
+#include <ros/names.h>
 #include <ros/node_handle.h>
 #include <ros/time.h>
 
@@ -94,7 +95,9 @@ public:
       return false;
     }
     BOOST_FOREACH (const ModeNameMap::value_type &mode_name, mode_name_map) {
-      const ActuatorOperatingModePtr mode(makeOperatingMode(mode_name.second));
+      std::map< std::string, int > item_map;
+      param_nh.getParam(ros::names::append("item_map", mode_name.second), item_map);
+      const ActuatorOperatingModePtr mode(makeOperatingMode(mode_name.second, item_map));
       if (!mode) {
         ROS_ERROR_STREAM("Actuator::init(): Failed to make operating mode "
                          << mode_name.second << " for " << data_->name);
@@ -177,21 +180,22 @@ private:
     return true;
   }
 
-  ActuatorOperatingModePtr makeOperatingMode(const std::string &mode_str) {
+  ActuatorOperatingModePtr makeOperatingMode(const std::string &mode_str,
+                                             const std::map< std::string, int > &item_map) {
     if (mode_str == "clear_multi_turn") {
       return boost::make_shared< ActuatorClearMultiTurnMode >(data_);
     } else if (mode_str == "current") {
-      return boost::make_shared< ActuatorCurrentMode >(data_);
+      return boost::make_shared< ActuatorCurrentMode >(data_, item_map);
     } else if (mode_str == "current_based_position") {
-      return boost::make_shared< ActuatorCurrentBasedPositionMode >(data_);
+      return boost::make_shared< ActuatorCurrentBasedPositionMode >(data_, item_map);
     } else if (mode_str == "extended_position") {
-      return boost::make_shared< ActuatorExtendedPositionMode >(data_);
+      return boost::make_shared< ActuatorExtendedPositionMode >(data_, item_map);
     } else if (mode_str == "reboot") {
       return boost::make_shared< ActuatorRebootMode >(data_);
     } else if (mode_str == "torque_disable") {
       return boost::make_shared< ActuatorTorqueDisableMode >(data_);
     } else if (mode_str == "velocity") {
-      return boost::make_shared< ActuatorVelocityMode >(data_);
+      return boost::make_shared< ActuatorVelocityMode >(data_, item_map);
     }
     ROS_ERROR_STREAM("Actuator::makeOperatingMode(): Unknown operating mode name " << mode_str);
     return ActuatorOperatingModePtr();
