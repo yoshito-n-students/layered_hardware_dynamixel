@@ -73,7 +73,12 @@ public:
 
   virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
                         const std::list< hi::ControllerInfo > &stop_list) {
-    // nothing to do
+    // convert actuator states to joint states because the actuator states may be changed/initialized
+    // by ActuatorLayer::doSwich() executed just before this.
+    propagate< ti::ActuatorToJointStateInterface >();
+
+    // instead, we do not have to convert joint commands to actuator commands
+    // because the new controllers never started at this timing.
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
