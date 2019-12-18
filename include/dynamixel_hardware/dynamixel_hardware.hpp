@@ -36,10 +36,10 @@ public:
 
   virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
                         const std::list< hi::ControllerInfo > &stop_list) {
-    // do something required on switching controllers
-    joint_limits_layer_.doSwitch(start_list, stop_list);
-    transmission_layer_.doSwitch(start_list, stop_list);
+    // do something required on just before switching controllers
     actuator_layer_.doSwitch(start_list, stop_list);
+    transmission_layer_.doSwitch(start_list, stop_list);
+    joint_limits_layer_.doSwitch(start_list, stop_list);
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
