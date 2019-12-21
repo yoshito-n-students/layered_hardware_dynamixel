@@ -59,7 +59,8 @@ public:
       if (has_non_hw_ator) {
         continue;
       }
-      // load the transmission
+      // load the transmission.
+      // this will register handles of joints associated to the transmission to the hardware.
       if (!iface_loader_->load(info)) {
         ROS_ERROR_STREAM("TransmissionLayer::init(): Failed to load the transmission "
                          << info.name_);
