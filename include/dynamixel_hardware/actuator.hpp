@@ -106,20 +106,6 @@ public:
       mode_map_[mode_name.first] = mode;
     }
 
-    // init dynamixel's control table (optional)
-    typedef std::map< std::string, int > ItemMap;
-    ItemMap item_map;
-    if (param_nh.getParam("initial_control_table", item_map)) {
-      BOOST_FOREACH (const ItemMap::value_type &item, item_map) {
-        if (!data_->dxl_wb.itemWrite(data_->id, item.first.c_str(),
-                                     static_cast< int32_t >(item.second))) {
-          ROS_ERROR_STREAM("Actuator::init(): Failed to set a control table item "
-                           << item.first << " of " << data_->name << " to " << item.second);
-          return false;
-        }
-      }
-    }
-
     return true;
   }
 
