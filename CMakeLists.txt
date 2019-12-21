@@ -11,7 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   dynamixel_workbench_toolbox
   hardware_interface
+  hardware_interface_extensions
   joint_limits_interface
+  joint_limits_interface_extensions
   roscpp
   transmission_interface
   urdf
@@ -109,7 +111,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES dynamixel_hardware
-  CATKIN_DEPENDS controller_manager dynamixel_workbench_toolbox hardware_interface joint_limits_interface roscpp transmission_interface urdf
+  CATKIN_DEPENDS controller_manager dynamixel_workbench_toolbox hardware_interface hardware_interface_extensions joint_limits_interface joint_limits_interface_extensions roscpp transmission_interface urdf
 #  DEPENDS system_lib
 )
 
