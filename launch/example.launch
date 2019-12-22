@@ -21,17 +21,17 @@
                 actuators:
                     shoulder_actuator:
                         id: 1
-                        torque_constant: 8.0945e-3
+                        torque_constant: 2.41
                         operating_mode_map:
                             shoulder_controller: extended_position
                     elbow_actuator:
                         id: 2
-                        torque_constant: 8.0945e-3
+                        torque_constant: 2.41
                         operating_mode_map:
                             elbow_controller: extended_position
                     wrist_actuator:
                         id: 3
-                        torque_constant: 8.0945e-3
+                        torque_constant: 2.41
                         operating_mode_map:
                             wrist_controller: current
         </rosparam>
