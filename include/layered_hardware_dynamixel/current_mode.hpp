@@ -20,7 +20,7 @@ public:
 
   virtual void starting() {
     // switch to current mode
-    setOperatingModeAndTorqueOn(&DynamixelWorkbench::setCurrentControlMode);
+    enableOperatingMode(&DynamixelWorkbench::setCurrentControlMode);
 
     // set reasonable initial command
     data_->eff_cmd = 0.;

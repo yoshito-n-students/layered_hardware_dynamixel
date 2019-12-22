@@ -21,7 +21,7 @@ public:
 
   virtual void starting() {
     // switch to current-based position mode
-    setOperatingModeAndTorqueOn(&DynamixelWorkbench::setCurrentBasedPositionControlMode);
+    enableOperatingMode(&DynamixelWorkbench::setCurrentBasedPositionControlMode);
 
     writeItems(item_map_);
 

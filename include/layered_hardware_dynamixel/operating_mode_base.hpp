@@ -85,19 +85,22 @@ protected:
   // write functions for child classes
   //
 
-  void setOperatingModeAndTorqueOn(bool (DynamixelWorkbench::*const set_func)(uint8_t,
-                                                                              const char **)) {
-    if (!(data_->dxl_wb.*set_func)(data_->id, NULL)) {
-      ROS_ERROR_STREAM("OperatingModeBase::setOperatingModeAndTorqueOn(): Failed to set "
-                       "operating mode of the actuator '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
-      return;
-    }
-    if (!data_->dxl_wb.torqueOn(data_->id)) {
-      ROS_ERROR_STREAM("OperatingModeBase::setOperatingModeAndTorqueOn(): Failed to enable torque "
+  void enableOperatingMode(bool (DynamixelWorkbench::*const set_func)(uint8_t, const char **)) {
+    // 1. set torque off to change operating modes
+    // 2. change operating modes
+    // 3. activate new operating mode by setting torque on
+    if (!data_->dxl_wb.torqueOff(data_->id) || !(data_->dxl_wb.*set_func)(data_->id, NULL) ||
+        !data_->dxl_wb.torqueOn(data_->id)) {
+      ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to change operating modes "
                        "of the actuator '"
                        << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
-      return;
+    }
+  }
+
+  void torqueOff() {
+    if (!data_->dxl_wb.torqueOff(data_->id)) {
+      ROS_ERROR_STREAM("OperatingModeBase::torqueOff(): Failed to disable torque of the actuator '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 
@@ -110,13 +113,6 @@ protected:
                          << item.first << "' of the actuator '" << data_->name << "' to "
                          << item.second);
       }
-    }
-  }
-
-  void torqueOff() {
-    if (!data_->dxl_wb.torqueOff(data_->id)) {
-      ROS_ERROR_STREAM("OperatingModeBase::torqueOff(): Failed to disable torque of the actuator '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
     }
   }
 

@@ -21,7 +21,7 @@ public:
 
   virtual void starting() {
     // switch to extended-position mode & torque enable
-    setOperatingModeAndTorqueOn(&DynamixelWorkbench::setExtendedPositionControlMode);
+    enableOperatingMode(&DynamixelWorkbench::setExtendedPositionControlMode);
 
     writeItems(item_map_);
 

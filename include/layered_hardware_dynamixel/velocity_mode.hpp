@@ -20,7 +20,7 @@ public:
 
   virtual void starting() {
     // switch to velocity mode
-    setOperatingModeAndTorqueOn(&DynamixelWorkbench::setVelocityControlMode);
+    enableOperatingMode(&DynamixelWorkbench::setVelocityControlMode);
 
     writeItems(item_map_);
 
