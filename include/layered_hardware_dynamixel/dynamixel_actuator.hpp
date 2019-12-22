@@ -46,8 +46,8 @@ public:
     }
   }
 
-  bool init(const std::string &name, DynamixelWorkbench &dxl_wb, hi::RobotHW &hw,
-            ros::NodeHandle &param_nh) {
+  bool init(const std::string &name, DynamixelWorkbench *const dxl_wb, hi::RobotHW *const hw,
+            const ros::NodeHandle &param_nh) {
     // dynamixel id from param
     int id;
     if (!param_nh.getParam("id", id)) {
@@ -58,7 +58,7 @@ public:
 
     // find dynamixel actuator by id
     uint16_t model_number;
-    if (!dxl_wb.ping(id, &model_number)) {
+    if (!dxl_wb->ping(id, &model_number)) {
       ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to ping the actuator '"
                        << name << "' (id: " << static_cast< int >(id) << ")");
       return false;
@@ -159,8 +159,8 @@ public:
 
 private:
   template < typename Interface, typename Handle >
-  bool registerActuatorTo(hi::RobotHW &hw, const Handle &handle) {
-    Interface *const iface(hw.get< Interface >());
+  static bool registerActuatorTo(hi::RobotHW *const hw, const Handle &handle) {
+    Interface *const iface(hw->get< Interface >());
     if (!iface) {
       ROS_ERROR("DynamixelActuator::registerActuatorTo(): Failed to get a hardware interface");
       return false;

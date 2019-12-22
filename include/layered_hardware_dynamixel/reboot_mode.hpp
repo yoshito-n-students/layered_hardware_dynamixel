@@ -15,7 +15,7 @@ public:
   RebootMode(const DynamixelActuatorDataPtr &data) : OperatingModeBase("reboot", data) {}
 
   virtual void starting() {
-    if (!data_->dxl_wb.reboot(data_->id)) {
+    if (!data_->dxl_wb->reboot(data_->id)) {
       ROS_ERROR_STREAM("RebootMode::starting(): Failed to reboot the actuator '"
                        << data_->name << "' (id: " << data_->id << ")");
     }

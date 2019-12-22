@@ -42,7 +42,7 @@ protected:
 
   void readPosition() {
     float rad;
-    if (data_->dxl_wb.getRadian(data_->id, &rad)) {
+    if (data_->dxl_wb->getRadian(data_->id, &rad)) {
       data_->pos = rad;
     } else {
       ROS_ERROR_STREAM(
@@ -53,7 +53,7 @@ protected:
 
   void readVelocity() {
     float radps;
-    if (data_->dxl_wb.getVelocity(data_->id, &radps)) {
+    if (data_->dxl_wb->getVelocity(data_->id, &radps)) {
       data_->vel = radps;
     } else {
       ROS_ERROR_STREAM(
@@ -65,10 +65,10 @@ protected:
   void readEffort() {
     int32_t value;
     // TODO:
-    if (data_->dxl_wb.itemRead(data_->id, "Present_Current", &value)) {
+    if (data_->dxl_wb->itemRead(data_->id, "Present_Current", &value)) {
       // TODO: use the latest API
       data_->eff =
-          data_->dxl_wb.convertValue2Current(/* data_->id,*/ value) * data_->torque_constant;
+          data_->dxl_wb->convertValue2Current(/* data_->id,*/ value) * data_->torque_constant;
     } else {
       ROS_ERROR_STREAM("OperatingModeBase::readEffort(): Failed to read current from the actuator '"
                        << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
@@ -89,8 +89,8 @@ protected:
     // 1. set torque off to change operating modes
     // 2. change operating modes
     // 3. activate new operating mode by setting torque on
-    if (!data_->dxl_wb.torqueOff(data_->id) || !(data_->dxl_wb.*set_func)(data_->id, NULL) ||
-        !data_->dxl_wb.torqueOn(data_->id)) {
+    if (!data_->dxl_wb->torqueOff(data_->id) || !(data_->dxl_wb->*set_func)(data_->id, NULL) ||
+        !data_->dxl_wb->torqueOn(data_->id)) {
       ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to change operating modes "
                        "of the actuator '"
                        << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
@@ -98,7 +98,7 @@ protected:
   }
 
   void torqueOff() {
-    if (!data_->dxl_wb.torqueOff(data_->id)) {
+    if (!data_->dxl_wb->torqueOff(data_->id)) {
       ROS_ERROR_STREAM("OperatingModeBase::torqueOff(): Failed to disable torque of the actuator '"
                        << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
     }
@@ -107,8 +107,8 @@ protected:
   void writeItems(const std::map< std::string, int > &item_map) {
     typedef std::map< std::string, int > ItemMap;
     BOOST_FOREACH (const ItemMap::value_type item, item_map) {
-      if (!data_->dxl_wb.itemWrite(data_->id, item.first.c_str(),
-                                   static_cast< int32_t >(item.second))) {
+      if (!data_->dxl_wb->itemWrite(data_->id, item.first.c_str(),
+                                    static_cast< int32_t >(item.second))) {
         ROS_ERROR_STREAM("OperatingModeBase::writeItems(): Failed to write control item '"
                          << item.first << "' of the actuator '" << data_->name << "' to "
                          << item.second);
@@ -117,7 +117,7 @@ protected:
   }
 
   void writePositionCommand() {
-    if (!data_->dxl_wb.goalPosition(data_->id, static_cast< float >(data_->pos_cmd))) {
+    if (!data_->dxl_wb->goalPosition(data_->id, static_cast< float >(data_->pos_cmd))) {
       ROS_ERROR_STREAM("OperatingModeBase::writePositionCommand(): Failed to write position "
                        "command to the actuator '"
                        << data_->name << "' (command: " << data_->pos_cmd
@@ -126,7 +126,7 @@ protected:
   }
 
   void writeVelocityCommand() {
-    if (!data_->dxl_wb.goalVelocity(data_->id, static_cast< float >(data_->vel_cmd))) {
+    if (!data_->dxl_wb->goalVelocity(data_->id, static_cast< float >(data_->vel_cmd))) {
       ROS_ERROR_STREAM("OperatingModeBase::writeVelocityCommand(): Failed to write velocity "
                        "command to the actuator '"
                        << data_->name << "' (command: " << data_->vel_cmd
@@ -136,8 +136,8 @@ protected:
 
   void writeProfileVelocity() {
     const double prof_vel_cmd(std::abs(data_->vel_cmd));
-    if (!data_->dxl_wb.itemWrite(data_->id, "Profile_Velocity",
-                                 data_->dxl_wb.convertVelocity2Value(data_->id, prof_vel_cmd))) {
+    if (!data_->dxl_wb->itemWrite(data_->id, "Profile_Velocity",
+                                  data_->dxl_wb->convertVelocity2Value(data_->id, prof_vel_cmd))) {
       ROS_ERROR_STREAM("OperatingModeBase::writeProfileVelocity(): Failed to write profile "
                        "velocity to the actuator '"
                        << data_->name << "' (command: " << prof_vel_cmd
@@ -147,10 +147,10 @@ protected:
 
   void writeEffortCommand() {
     const double cur_cmd(data_->eff_cmd / data_->torque_constant);
-    if (!data_->dxl_wb.itemWrite(data_->id, "Goal_Current",
-                                 // TODO: use the latest API
-                                 data_->dxl_wb.convertCurrent2Value(
-                                     /* data_->id, */ cur_cmd))) {
+    if (!data_->dxl_wb->itemWrite(data_->id, "Goal_Current",
+                                  // TODO: use the latest API
+                                  data_->dxl_wb->convertCurrent2Value(
+                                      /* data_->id, */ cur_cmd))) {
       ROS_ERROR_STREAM("OperatingModeBase::writeEffortCommand(): Failed to write current command "
                        "to the actuator '"
                        << data_->name << "' (command: " << cur_cmd

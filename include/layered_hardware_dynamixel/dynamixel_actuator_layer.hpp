@@ -26,7 +26,8 @@ namespace layered_hardware_dynamixel {
 
 class DynamixelActuatorLayer : public lh::LayerBase {
 public:
-  virtual bool init(hi::RobotHW &hw, ros::NodeHandle &param_nh, const std::string &urdf_str) {
+  virtual bool init(hi::RobotHW *const hw, const ros::NodeHandle &param_nh,
+                    const std::string &urdf_str) {
     // make actuator interfaces registered to the hardware
     // so that other layers can find the interfaces
     makeRegistered< hi::ActuatorStateInterface >(hw);
@@ -35,8 +36,8 @@ public:
     makeRegistered< hi::EffortActuatorInterface >(hw);
 
     // open USB serial device
-    if (!dxl_wb_.init(param_nh.param< std::string >("serial_interface", "/dev/ttyUSB0").c_str(),
-                      param_nh.param("baudrate", 115200))) {
+    if (!dxl_wb_.init(param< std::string >(param_nh, "serial_interface", "/dev/ttyUSB0").c_str(),
+                      param(param_nh, "baudrate", 115200))) {
       ROS_ERROR_STREAM("DynamixelActuatorLayer::init(): Failed to open DynamixelWorkbench");
       return false;
     }
@@ -60,7 +61,7 @@ public:
          ator_param != ators_param.end(); ++ator_param) {
       DynamixelActuatorPtr ator(new DynamixelActuator());
       ros::NodeHandle ator_param_nh(param_nh, ros::names::append("actuators", ator_param->first));
-      if (!ator->init(ator_param->first, dxl_wb_, hw, ator_param_nh)) {
+      if (!ator->init(ator_param->first, &dxl_wb_, hw, ator_param_nh)) {
         return false;
       }
       ROS_INFO_STREAM("DynamixelActuatorLayer::init(): Initialized the actuator '"
@@ -92,10 +93,10 @@ public:
 private:
   // make an hardware interface registered. the interface must be in the static memory space
   // to allow access from outside of this plugin.
-  template < typename Interface > static void makeRegistered(hi::RobotHW &hw) {
-    if (!hw.get< Interface >()) {
+  template < typename Interface > static void makeRegistered(hi::RobotHW *const hw) {
+    if (!hw->get< Interface >()) {
       static Interface iface;
-      hw.registerInterface(&iface);
+      hw->registerInterface(&iface);
     }
   }
 

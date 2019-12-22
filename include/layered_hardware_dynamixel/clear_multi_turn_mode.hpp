@@ -16,7 +16,7 @@ public:
       : OperatingModeBase("clear_multi_turn", data) {}
 
   virtual void starting() {
-    if (!data_->dxl_wb.clearMultiTurn(data_->id)) {
+    if (!data_->dxl_wb->clearMultiTurn(data_->id)) {
       ROS_ERROR_STREAM(
           "ClearMultiTurnMode::starting(): Failed to clear multi turn offset of the actuator '"
           << data_->name << "' (id: " << data_->id << ")");

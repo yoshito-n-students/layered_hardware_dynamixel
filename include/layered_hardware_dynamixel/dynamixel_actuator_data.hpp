@@ -11,14 +11,14 @@
 namespace layered_hardware_dynamixel {
 
 struct DynamixelActuatorData {
-  DynamixelActuatorData(const std::string &_name, DynamixelWorkbench &_dxl_wb, const uint8_t _id,
-                        const double _torque_constant)
+  DynamixelActuatorData(const std::string &_name, DynamixelWorkbench *const _dxl_wb,
+                        const uint8_t _id, const double _torque_constant)
       : name(_name), dxl_wb(_dxl_wb), id(_id), torque_constant(_torque_constant), pos(0.), vel(0.),
         eff(0.), pos_cmd(0.), vel_cmd(0.), eff_cmd(0.) {}
 
   // handles
   const std::string name;
-  DynamixelWorkbench &dxl_wb;
+  DynamixelWorkbench *const dxl_wb;
   const uint8_t id;
 
   // params
