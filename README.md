@@ -1,9 +1,9 @@
 # layered_hardware_dynamixel
-A ros_control layer implementation for ROBOTIS Dynamixel actuators
+A ros_control layer implementation for ROBOTIS Dynamixel actuators. See [layered_hardware](https://github.com/yoshito-n-students/layered_hardware) to understand the layered scheme.
 
 ## Plugins: layered_hardware_dynamixel_plugins
 ### layered_hardware_dynamixel/DynamixelActuatorLayer
-* implements state & command interface for ROBOTIS Dynamixel actuators
+* implements state & command interfaces for ROBOTIS Dynamixel actuators
 #### Layer parameters (should be defined under ~<layer_name>)
 **serial_interface** (string, default: '/dev/ttyUSB0')
 * path to Usb2Dynamixel device
@@ -28,8 +28,8 @@ A ros_control layer implementation for ROBOTIS Dynamixel actuators
 
 **item_map/<operating_mode_name>** (map<string, int>, optional)
 * pairs of Dynamixel's control table key & value
-* values will be wrote to the actuator just after the operating mode is enabled
-* ex. custom PID gains for 'extended_position' mode
+* the plugin will write values to the actuator just after changing operating modes
+* ex. custom PID gains for the 'extended_position' mode
 ```
 item_map:
   extended_position:
