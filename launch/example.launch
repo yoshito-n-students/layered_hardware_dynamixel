@@ -1,27 +1,39 @@
 <launch>
 
     <!-- The robot description -->
-    <param name="robot_description" textfile="$(find dynamixel_hardware)/urdf/example.urdf" />
+    <param name="robot_description" textfile="$(find layered_hardware)/urdf/example.urdf" />
 
     <!-- Hardware driver -->
-    <node name="example_dynamixel_hardware_node" pkg="dynamixel_hardware" type="dynamixel_hardware_node" output="screen">
+    <node name="example_layered_hardware_node" pkg="layered_hardware" type="layered_hardware_node" output="screen">
         <rosparam>
             control_frequency: 20
             use_expected_period: true
-            serial_interface: /dev/ttyUSB0
-            baudrate: 1000000
-            actuators:
-                example_actuator:
-                    id: 1
-                    torque_constant: 8.0945e-3
-                    operating_mode_map:
-                        example_joint_posveleff_controller: current_based_position
-                        example_joint_posvel_controller: extended_position
-                        example_joint_position_controller: extended_position
-                        example_joint_velocity_controller: velocity
-                        example_joint_effort_controller: current
-                        example_joint_clear_multi_turn_controller: clear_multi_turn
-                        example_joint_reboot_controller: reboot
+            # upper (controller-side) to bottom (actuator-side)
+            layers: [ joint_limits_layer, transmission_layer, dynamixel_actuator_layer ]
+            joint_limits_layer:
+                type: layered_hardware/JointLimitsLayer
+            transmission_layer:
+                type: layered_hardware/TransmissionLayer
+            dynamixel_actuator_layer:
+                type: layered_hardware_dynamixel/DynamixelActuatorLayer
+                serial_interface: /dev/ttyUSB0
+                baudrate: 1000000
+                actuators:
+                    shoulder_actuator:
+                        id: 1
+                        torque_constant: 8.0945e-3
+                        operating_mode_map:
+                            shoulder_controller: extended_position
+                    elbow_actuator:
+                        id: 2
+                        torque_constant: 8.0945e-3
+                        operating_mode_map:
+                            elbow_controller: extended_position
+                    wrist_actuator:
+                        id: 3
+                        torque_constant: 8.0945e-3
+                        operating_mode_map:
+                            wrist_controller: current
         </rosparam>
     </node>
 
@@ -30,29 +42,22 @@
         joint_state_controller:
             type: joint_state_controller/JointStateController
             publish_rate: 20
-        example_joint_posveleff_controller:
-            type: posveleff_controllers/JointPosVelEffController
-            joint: example_joint
-        example_joint_posvel_controller:
-            type: posvel_controllers/JointPosVelController
-            joint: example_joint
-        example_joint_position_controller:
+        shoulder_controller:
             type: position_controllers/JointPositionController
-            joint: example_joint
-        example_joint_velocity_controller:
-            type: velocity_controllers/JointVelocityController
-            joint: example_joint
-        example_joint_effort_controller:
+            joint: shoulder
+        elbow_controller:
+            type: position_controllers/JointPositionController
+            joint: elbow
+        wrist_controller:
             type: effort_controllers/JointEffortController
-            joint: example_joint
-        example_joint_reboot_controller:
-            type: empty_controller/EmptyController
-        example_joint_clear_multi_turn_controller:
-            type: empty_controller/EmptyController
+            joint: wrist
     </rosparam>
 
     <!-- Controller starter -->
     <node name="controller_starter" pkg="controller_manager" type="controller_manager" output="screen"
-          args="spawn joint_state_controller example_joint_position_controller" />
+          args="spawn joint_state_controller shoulder_controller elbow_controller wrist_controller" />
+
+    <!-- joint state msg to tf -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" />
 
 </launch>
