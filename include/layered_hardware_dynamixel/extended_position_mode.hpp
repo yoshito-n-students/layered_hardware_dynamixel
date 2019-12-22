@@ -1,23 +1,23 @@
-#ifndef DYNAMIXEL_HARDWARE_ACTUATOR_EXTENDED_POSITION_MODE_HPP
-#define DYNAMIXEL_HARDWARE_ACTUATOR_EXTENDED_POSITION_MODE_HPP
+#ifndef LAYERED_HARDWARE_DYNAMIXEL_EXTENDED_POSITION_MODE_HPP
+#define LAYERED_HARDWARE_DYNAMIXEL_EXTENDED_POSITION_MODE_HPP
 
 #include <limits>
 #include <map>
 #include <string>
 
-#include <dynamixel_hardware/actuator_data.hpp>
-#include <dynamixel_hardware/actuator_operating_mode_base.hpp>
-#include <dynamixel_hardware/common_namespaces.hpp>
+#include <layered_hardware_dynamixel/common_namespaces.hpp>
+#include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
+#include <layered_hardware_dynamixel/operating_mode_base.hpp>
 #include <ros/duration.h>
 #include <ros/time.h>
 
-namespace dynamixel_hardware {
+namespace layered_hardware_dynamixel {
 
-class ActuatorExtendedPositionMode : public ActuatorOperatingModeBase {
+class ExtendedPositionMode : public OperatingModeBase {
 public:
-  ActuatorExtendedPositionMode(const ActuatorDataPtr &data,
-                               const std::map< std::string, int > &item_map)
-      : ActuatorOperatingModeBase("extended_position", data), item_map_(item_map) {}
+  ExtendedPositionMode(const DynamixelActuatorDataPtr &data,
+                       const std::map< std::string, int > &item_map)
+      : OperatingModeBase("extended_position", data), item_map_(item_map) {}
 
   virtual void starting() {
     // switch to extended-position mode & torque enable
@@ -56,6 +56,6 @@ private:
   const std::map< std::string, int > item_map_;
   double prev_pos_cmd_, prev_vel_cmd_;
 };
-} // namespace dynamixel_hardware
+} // namespace layered_hardware_dynamixel
 
 #endif

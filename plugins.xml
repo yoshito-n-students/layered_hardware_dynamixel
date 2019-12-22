@@ -1,0 +1,11 @@
+<library path="lib/liblayered_hardware_dynamixel_plugins">
+
+  <class name="layered_hardware_dynamixel/DynamixelActuatorLayer"
+         type="layered_hardware_dyanmixel::DynamixelActuatorLayer"
+         base_class_type="layered_hardware::LayerBase">
+    <description>
+      Hardware layer that handles ROBOTIS Dynamixel actuators
+    </description>
+  </class>  
+
+</library>

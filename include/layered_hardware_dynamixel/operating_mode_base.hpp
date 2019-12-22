@@ -1,28 +1,29 @@
-#ifndef DYNAMIXEL_HARDWARE_ACTUATOR_OPERATING_MODE_BASE_HPP
-#define DYNAMIXEL_HARDWARE_ACTUATOR_OPERATING_MODE_BASE_HPP
+#ifndef LAYERED_HARDWARE_DYNAMIXEL_OPERATING_MODE_BASE_HPP
+#define LAYERED_HARDWARE_DYNAMIXEL_OPERATING_MODE_BASE_HPP
 
 #include <cmath>
 #include <limits>
 #include <map>
 #include <string>
 
-#include <dynamixel_hardware/actuator_data.hpp>
+#include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
 #include <ros/console.h>
 #include <ros/duration.h>
 #include <ros/time.h>
 
 #include <boost/cstdint.hpp>
+#include <boost/foreach.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> // for isnan()
 #include <boost/shared_ptr.hpp>
 
-namespace dynamixel_hardware {
+namespace layered_hardware_dynamixel {
 
-class ActuatorOperatingModeBase {
+class OperatingModeBase {
 public:
-  ActuatorOperatingModeBase(const std::string &name, const ActuatorDataPtr &data)
+  OperatingModeBase(const std::string &name, const DynamixelActuatorDataPtr &data)
       : name_(name), data_(data) {}
 
-  virtual ~ActuatorOperatingModeBase() {}
+  virtual ~OperatingModeBase() {}
 
   std::string getName() const { return name_; }
 
@@ -44,7 +45,7 @@ protected:
     if (data_->dxl_wb.getRadian(data_->id, &rad)) {
       data_->pos = rad;
     } else {
-      ROS_ERROR_STREAM("ActuatorOperatingModeBase::readPosition(): Failed to read position from "
+      ROS_ERROR_STREAM("OperatingModeBase::readPosition(): Failed to read position from "
                        << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
@@ -54,7 +55,7 @@ protected:
     if (data_->dxl_wb.getVelocity(data_->id, &radps)) {
       data_->vel = radps;
     } else {
-      ROS_ERROR_STREAM("ActuatorOperatingModeBase::readVelocity(): Failed to read velocity from "
+      ROS_ERROR_STREAM("OperatingModeBase::readVelocity(): Failed to read velocity from "
                        << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
@@ -67,7 +68,7 @@ protected:
       data_->eff =
           data_->dxl_wb.convertValue2Current(/* data_->id,*/ value) * data_->torque_constant;
     } else {
-      ROS_ERROR_STREAM("ActuatorOperatingModeBase::readEffort(): Failed to read current from "
+      ROS_ERROR_STREAM("OperatingModeBase::readEffort(): Failed to read current from "
                        << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
@@ -85,14 +86,14 @@ protected:
   void setOperatingModeAndTorqueOn(bool (DynamixelWorkbench::*const set_func)(uint8_t,
                                                                               const char **)) {
     if (!(data_->dxl_wb.*set_func)(data_->id, NULL)) {
-      ROS_ERROR_STREAM("ActuatorOperatingModeBase::setOperatingModeAndTorqueOn(): Failed to set "
+      ROS_ERROR_STREAM("OperatingModeBase::setOperatingModeAndTorqueOn(): Failed to set "
                        "operating mode of "
                        << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
       return;
     }
     if (!data_->dxl_wb.torqueOn(data_->id)) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::setOperatingModeAndTorqueOn(): Failed to enable torque of "
+          "OperatingModeBase::setOperatingModeAndTorqueOn(): Failed to enable torque of "
           << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
       return;
     }
@@ -103,7 +104,7 @@ protected:
     BOOST_FOREACH (const ItemMap::value_type item, item_map) {
       if (!data_->dxl_wb.itemWrite(data_->id, item.first.c_str(),
                                    static_cast< int32_t >(item.second))) {
-        ROS_ERROR_STREAM("ActuatorOperatingModeBase::writeItems(): Failed to write control item "
+        ROS_ERROR_STREAM("OperatingModeBase::writeItems(): Failed to write control item "
                          << item.first << " of " << data_->name << " to " << item.second);
       }
     }
@@ -111,7 +112,7 @@ protected:
 
   void torqueOff() {
     if (!data_->dxl_wb.torqueOff(data_->id)) {
-      ROS_ERROR_STREAM("ActuatorOperatingModeBase::torqueOff(): Failed to disable torque of "
+      ROS_ERROR_STREAM("OperatingModeBase::torqueOff(): Failed to disable torque of "
                        << data_->name << " (id: " << static_cast< int >(data_->id) << ")");
     }
   }
@@ -119,7 +120,7 @@ protected:
   void writePositionCommand() {
     if (!data_->dxl_wb.goalPosition(data_->id, static_cast< float >(data_->pos_cmd))) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::writePositionCommand(): Failed to write position command to "
+          "OperatingModeBase::writePositionCommand(): Failed to write position command to "
           << data_->name << " (command: " << data_->pos_cmd
           << ", id: " << static_cast< int >(data_->id) << ")");
     }
@@ -128,7 +129,7 @@ protected:
   void writeVelocityCommand() {
     if (!data_->dxl_wb.goalVelocity(data_->id, static_cast< float >(data_->vel_cmd))) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::writeVelocityCommand(): Failed to write velocity command to "
+          "OperatingModeBase::writeVelocityCommand(): Failed to write velocity command to "
           << data_->name << " (command: " << data_->vel_cmd
           << ", id: " << static_cast< int >(data_->id) << ")");
     }
@@ -139,7 +140,7 @@ protected:
     if (!data_->dxl_wb.itemWrite(data_->id, "Profile_Velocity",
                                  data_->dxl_wb.convertVelocity2Value(data_->id, prof_vel_cmd))) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::writeProfileVelocity(): Failed to write profile velocity to "
+          "OperatingModeBase::writeProfileVelocity(): Failed to write profile velocity to "
           << data_->name << " (command: " << prof_vel_cmd
           << ", id: " << static_cast< int >(data_->id) << ")");
     }
@@ -152,7 +153,7 @@ protected:
                                  data_->dxl_wb.convertCurrent2Value(
                                      /* data_->id, */ cur_cmd))) {
       ROS_ERROR_STREAM(
-          "ActuatorOperatingModeBase::writeEffortCommand(): Failed to write current command to "
+          "OperatingModeBase::writeEffortCommand(): Failed to write current command to "
           << data_->name << " (command: " << cur_cmd << ", id: " << static_cast< int >(data_->id)
           << ")");
     }
@@ -171,11 +172,11 @@ protected:
 
 protected:
   const std::string name_;
-  const ActuatorDataPtr data_;
+  const DynamixelActuatorDataPtr data_;
 };
 
-typedef boost::shared_ptr< ActuatorOperatingModeBase > ActuatorOperatingModePtr;
-typedef boost::shared_ptr< const ActuatorOperatingModeBase > ActuatorOperatingModeConstPtr;
-} // namespace dynamixel_hardware
+typedef boost::shared_ptr< OperatingModeBase > OperatingModePtr;
+typedef boost::shared_ptr< const OperatingModeBase > OperatingModeConstPtr;
+} // namespace layered_hardware_dynamixel
 
 #endif

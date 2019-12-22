@@ -1,23 +1,23 @@
-#ifndef DYNAMIXEL_HARDWARE_ACTUATOR_CURRENT_BASED_POSITION_MODE_HPP
-#define DYNAMIXEL_HARDWARE_ACTUATOR_CURRENT_BASED_POSITION_MODE_HPP
+#ifndef LAYERED_HARDWARE_DYNAMIXEL_CURRENT_BASED_POSITION_MODE_HPP
+#define LAYERED_HARDWARE_DYNAMIXEL_CURRENT_BASED_POSITION_MODE_HPP
 
 #include <limits>
 #include <map>
 #include <string>
 
-#include <dynamixel_hardware/actuator_data.hpp>
-#include <dynamixel_hardware/actuator_operating_mode_base.hpp>
-#include <dynamixel_hardware/common_namespaces.hpp>
+#include <layered_hardware_dynamixel/common_namespaces.hpp>
+#include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
+#include <layered_hardware_dynamixel/operating_mode_base.hpp>
 #include <ros/duration.h>
 #include <ros/time.h>
 
-namespace dynamixel_hardware {
+namespace layered_hardware_dynamixel {
 
-class ActuatorCurrentBasedPositionMode : public ActuatorOperatingModeBase {
+class CurrentBasedPositionMode : public OperatingModeBase {
 public:
-  ActuatorCurrentBasedPositionMode(const ActuatorDataPtr &data,
-                                   const std::map< std::string, int > &item_map)
-      : ActuatorOperatingModeBase("current_based_position", data) {}
+  CurrentBasedPositionMode(const DynamixelActuatorDataPtr &data,
+                           const std::map< std::string, int > &item_map)
+      : OperatingModeBase("current_based_position", data) {}
 
   virtual void starting() {
     // switch to current-based position mode
@@ -62,6 +62,6 @@ private:
   const std::map< std::string, int > item_map_;
   double prev_pos_cmd_, prev_vel_cmd_, prev_eff_cmd_;
 };
-} // namespace dynamixel_hardware
+} // namespace layered_hardware_dynamixel
 
 #endif

@@ -1,24 +1,24 @@
-#ifndef DYNAMIXEL_HARDWARE_ACTUATOR_HPP
-#define DYNAMIXEL_HARDWARE_ACTUATOR_HPP
+#ifndef LAYERED_HARDWARE_DYNAMIXEL_DYNAMIXEL_ACTUATOR_HPP
+#define LAYERED_HARDWARE_DYNAMIXEL_DYNAMIXEL_ACTUATOR_HPP
 
 #include <list>
 #include <map>
 #include <string>
 
-#include <dynamixel_hardware/actuator_clear_multi_turn_mode.hpp>
-#include <dynamixel_hardware/actuator_current_based_position_mode.hpp>
-#include <dynamixel_hardware/actuator_current_mode.hpp>
-#include <dynamixel_hardware/actuator_data.hpp>
-#include <dynamixel_hardware/actuator_extended_position_mode.hpp>
-#include <dynamixel_hardware/actuator_operating_mode_base.hpp>
-#include <dynamixel_hardware/actuator_reboot_mode.hpp>
-#include <dynamixel_hardware/actuator_torque_disable_mode.hpp>
-#include <dynamixel_hardware/actuator_velocity_mode.hpp>
-#include <dynamixel_hardware/common_namespaces.hpp>
 #include <hardware_interface/actuator_command_interface.h>
 #include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/controller_info.h>
 #include <hardware_interface/robot_hw.h>
+#include <layered_hardware_dynamixel/clear_multi_turn_mode.hpp>
+#include <layered_hardware_dynamixel/common_namespaces.hpp>
+#include <layered_hardware_dynamixel/current_based_position_mode.hpp>
+#include <layered_hardware_dynamixel/current_mode.hpp>
+#include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
+#include <layered_hardware_dynamixel/extended_position_mode.hpp>
+#include <layered_hardware_dynamixel/operating_mode_base.hpp>
+#include <layered_hardware_dynamixel/reboot_mode.hpp>
+#include <layered_hardware_dynamixel/torque_disable_mode.hpp>
+#include <layered_hardware_dynamixel/velocity_mode.hpp>
 #include <ros/console.h>
 #include <ros/duration.h>
 #include <ros/names.h>
@@ -30,19 +30,19 @@
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 
-namespace dynamixel_hardware {
+namespace layered_hardware_dynamixel {
 
-class Actuator {
+class DynamixelActuator {
 public:
-  Actuator() {}
+  DynamixelActuator() {}
 
-  virtual ~Actuator() {
+  virtual ~DynamixelActuator() {
     // finalize the present mode
     if (present_mode_) {
-      ROS_INFO_STREAM("Actuator::~Actuator(): Stopping operating mode "
+      ROS_INFO_STREAM("DynamixelActuator::~DynamixelActuator(): Stopping operating mode "
                       << present_mode_->getName() << " for actuator " << data_->name);
       present_mode_->stopping();
-      present_mode_ = ActuatorOperatingModePtr();
+      present_mode_ = OperatingModePtr();
     }
   }
 
@@ -51,14 +51,15 @@ public:
     // dynamixel id from param
     int id;
     if (!param_nh.getParam("id", id)) {
-      ROS_ERROR_STREAM("Actuator::init(): Failed to get param " << param_nh.resolveName("id"));
+      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param "
+                       << param_nh.resolveName("id"));
       return false;
     }
 
     // find dynamixel actuator by id
     uint16_t model_number;
     if (!dxl_wb.ping(id, &model_number)) {
-      ROS_ERROR_STREAM("Actuator::init(): Failed to ping the actuator "
+      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to ping the actuator "
                        << name << "(id: " << static_cast< int >(id) << ")");
       return false;
     }
@@ -66,13 +67,13 @@ public:
     // torque constant from param
     double torque_constant;
     if (!param_nh.getParam("torque_constant", torque_constant)) {
-      ROS_ERROR_STREAM("Actuator::init(): Failed to get param "
+      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param "
                        << param_nh.resolveName("torque_constant"));
       return false;
     }
 
     // allocate data structure
-    data_.reset(new ActuatorData(name, dxl_wb, id, torque_constant));
+    data_.reset(new DynamixelActuatorData(name, dxl_wb, id, torque_constant));
 
     // register actuator states & commands to corresponding hardware interfaces
     const hi::ActuatorStateHandle state_handle(data_->name, &data_->pos, &data_->vel, &data_->eff);
@@ -90,16 +91,16 @@ public:
     typedef std::map< std::string, std::string > ModeNameMap;
     ModeNameMap mode_name_map;
     if (!param_nh.getParam("operating_mode_map", mode_name_map)) {
-      ROS_ERROR_STREAM("Actuator::init(): Failed to get param "
+      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param "
                        << param_nh.resolveName("operating_mode_map"));
       return false;
     }
     BOOST_FOREACH (const ModeNameMap::value_type &mode_name, mode_name_map) {
       std::map< std::string, int > item_map;
       param_nh.getParam(ros::names::append("item_map", mode_name.second), item_map);
-      const ActuatorOperatingModePtr mode(makeOperatingMode(mode_name.second, item_map));
+      const OperatingModePtr mode(makeOperatingMode(mode_name.second, item_map));
       if (!mode) {
-        ROS_ERROR_STREAM("Actuator::init(): Failed to make operating mode "
+        ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to make operating mode "
                          << mode_name.second << " for " << data_->name);
         return false;
       }
@@ -114,13 +115,13 @@ public:
     // stop actuator's operating mode according to stopping controller list
     if (present_mode_) {
       BOOST_FOREACH (const hi::ControllerInfo &stopping_controller, stopping_controller_list) {
-        const std::map< std::string, ActuatorOperatingModePtr >::const_iterator mode_to_stop(
+        const std::map< std::string, OperatingModePtr >::const_iterator mode_to_stop(
             mode_map_.find(stopping_controller.name));
         if (mode_to_stop != mode_map_.end() && mode_to_stop->second == present_mode_) {
-          ROS_INFO_STREAM("Actuator::doSwitch(): Stopping operating mode "
+          ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Stopping operating mode "
                           << present_mode_->getName() << " for actuator " << data_->name);
           present_mode_->stopping();
-          present_mode_ = ActuatorOperatingModePtr();
+          present_mode_ = OperatingModePtr();
           break;
         }
       }
@@ -129,10 +130,10 @@ public:
     // start actuator's operating modes according to starting controllers
     if (!present_mode_) {
       BOOST_FOREACH (const hi::ControllerInfo &starting_controller, starting_controller_list) {
-        const std::map< std::string, ActuatorOperatingModePtr >::const_iterator mode_to_start(
+        const std::map< std::string, OperatingModePtr >::const_iterator mode_to_start(
             mode_map_.find(starting_controller.name));
         if (mode_to_start != mode_map_.end() && mode_to_start->second) {
-          ROS_INFO_STREAM("Actuator::doSwitch(): Starting operating mode "
+          ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Starting operating mode "
                           << mode_to_start->second->getName() << " for actuator " << data_->name);
           present_mode_ = mode_to_start->second;
           present_mode_->starting();
@@ -159,43 +160,44 @@ private:
   bool registerActuatorTo(hi::RobotHW &hw, const Handle &handle) {
     Interface *const iface(hw.get< Interface >());
     if (!iface) {
-      ROS_ERROR("Actuator::registerActuator(): Failed to get a hardware interface");
+      ROS_ERROR("DynamixelActuator::registerActuatorTo(): Failed to get a hardware interface");
       return false;
     }
     iface->registerHandle(handle);
     return true;
   }
 
-  ActuatorOperatingModePtr makeOperatingMode(const std::string &mode_str,
-                                             const std::map< std::string, int > &item_map) {
+  OperatingModePtr makeOperatingMode(const std::string &mode_str,
+                                     const std::map< std::string, int > &item_map) {
     if (mode_str == "clear_multi_turn") {
-      return boost::make_shared< ActuatorClearMultiTurnMode >(data_);
+      return boost::make_shared< ClearMultiTurnMode >(data_);
     } else if (mode_str == "current") {
-      return boost::make_shared< ActuatorCurrentMode >(data_, item_map);
+      return boost::make_shared< CurrentMode >(data_, item_map);
     } else if (mode_str == "current_based_position") {
-      return boost::make_shared< ActuatorCurrentBasedPositionMode >(data_, item_map);
+      return boost::make_shared< CurrentBasedPositionMode >(data_, item_map);
     } else if (mode_str == "extended_position") {
-      return boost::make_shared< ActuatorExtendedPositionMode >(data_, item_map);
+      return boost::make_shared< ExtendedPositionMode >(data_, item_map);
     } else if (mode_str == "reboot") {
-      return boost::make_shared< ActuatorRebootMode >(data_);
+      return boost::make_shared< RebootMode >(data_);
     } else if (mode_str == "torque_disable") {
-      return boost::make_shared< ActuatorTorqueDisableMode >(data_);
+      return boost::make_shared< TorqueDisableMode >(data_);
     } else if (mode_str == "velocity") {
-      return boost::make_shared< ActuatorVelocityMode >(data_, item_map);
+      return boost::make_shared< VelocityMode >(data_, item_map);
     }
-    ROS_ERROR_STREAM("Actuator::makeOperatingMode(): Unknown operating mode name " << mode_str);
-    return ActuatorOperatingModePtr();
+    ROS_ERROR_STREAM("DynamixelActuator::makeOperatingMode(): Unknown operating mode name "
+                     << mode_str);
+    return OperatingModePtr();
   }
 
 private:
-  ActuatorDataPtr data_;
+  DynamixelActuatorDataPtr data_;
 
-  std::map< std::string, ActuatorOperatingModePtr > mode_map_;
-  ActuatorOperatingModePtr present_mode_;
+  std::map< std::string, OperatingModePtr > mode_map_;
+  OperatingModePtr present_mode_;
 };
 
-typedef boost::shared_ptr< Actuator > ActuatorPtr;
-typedef boost::shared_ptr< const Actuator > ActuatorConstPtr;
-} // namespace dynamixel_hardware
+typedef boost::shared_ptr< DynamixelActuator > DynamixelActuatorPtr;
+typedef boost::shared_ptr< const DynamixelActuator > DynamixelActuatorConstPtr;
+} // namespace layered_hardware_dynamixel
 
 #endif

@@ -1,29 +1,29 @@
-#ifndef DYNAMIXEL_HARDWARE_ACTUATOR_VELOCITY_MODE_HPP
-#define DYNAMIXEL_HARDWARE_ACTUATOR_VELOCITY_MODE_HPP
+#ifndef LAYERED_HARDWARE_DYNAMIXEL_VELOCITY_MODE_HPP
+#define LAYERED_HARDWARE_DYNAMIXEL_VELOCITY_MODE_HPP
 
 #include <limits>
 #include <map>
 #include <string>
 
-#include <dynamixel_hardware/actuator_data.hpp>
-#include <dynamixel_hardware/actuator_operating_mode_base.hpp>
-#include <dynamixel_hardware/common_namespaces.hpp>
+#include <layered_hardware_dynamixel/common_namespaces.hpp>
+#include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
+#include <layered_hardware_dynamixel/operating_mode_base.hpp>
 #include <ros/duration.h>
 #include <ros/time.h>
 
-namespace dynamixel_hardware {
+namespace layered_hardware_dynamixel {
 
-class ActuatorVelocityMode : public ActuatorOperatingModeBase {
+class VelocityMode : public OperatingModeBase {
 public:
-  ActuatorVelocityMode(const ActuatorDataPtr &data, const std::map< std::string, int > &item_map)
-      : ActuatorOperatingModeBase("velocity", data), item_map_(item_map) {}
+  VelocityMode(const DynamixelActuatorDataPtr &data, const std::map< std::string, int > &item_map)
+      : OperatingModeBase("velocity", data), item_map_(item_map) {}
 
   virtual void starting() {
     // switch to velocity mode
     setOperatingModeAndTorqueOn(&DynamixelWorkbench::setVelocityControlMode);
 
     writeItems(item_map_);
-    
+
     // set reasonable initial command
     data_->vel_cmd = 0.;
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
@@ -44,6 +44,6 @@ private:
   const std::map< std::string, int > item_map_;
   double prev_vel_cmd_;
 };
-} // namespace dynamixel_hardware
+} // namespace layered_hardware_dynamixel
 
 #endif

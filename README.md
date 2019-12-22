@@ -1,2 +1,2 @@
-# dynamixel_hardware
-A ROS1 driver for ROBOTIS Dynamixel that supports full ros_control concepts (transmission, joint limits, and controllers)
+# layered_hardware_dynamixel
+A ros_control layer implementation for ROBOTIS Dynamixel actuators
