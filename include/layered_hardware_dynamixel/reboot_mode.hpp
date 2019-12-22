@@ -16,8 +16,8 @@ public:
 
   virtual void starting() {
     if (!data_->dxl_wb.reboot(data_->id)) {
-      ROS_ERROR_STREAM("RebootMode::starting(): Failed to reboot " << data_->name
-                                                                   << " (id: " << data_->id << ")");
+      ROS_ERROR_STREAM("RebootMode::starting(): Failed to reboot the actuator '"
+                       << data_->name << "' (id: " << data_->id << ")");
     }
     // TODO: ping to wait rebooted ??
   }

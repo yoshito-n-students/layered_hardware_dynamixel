@@ -39,8 +39,8 @@ public:
   virtual ~DynamixelActuator() {
     // finalize the present mode
     if (present_mode_) {
-      ROS_INFO_STREAM("DynamixelActuator::~DynamixelActuator(): Stopping operating mode "
-                      << present_mode_->getName() << " for actuator " << data_->name);
+      ROS_INFO_STREAM("DynamixelActuator::~DynamixelActuator(): Stopping operating mode '"
+                      << present_mode_->getName() << "' for actuator '" << data_->name << "'");
       present_mode_->stopping();
       present_mode_ = OperatingModePtr();
     }
@@ -51,24 +51,24 @@ public:
     // dynamixel id from param
     int id;
     if (!param_nh.getParam("id", id)) {
-      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param "
-                       << param_nh.resolveName("id"));
+      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param '"
+                       << param_nh.resolveName("id") << "'");
       return false;
     }
 
     // find dynamixel actuator by id
     uint16_t model_number;
     if (!dxl_wb.ping(id, &model_number)) {
-      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to ping the actuator "
-                       << name << "(id: " << static_cast< int >(id) << ")");
+      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to ping the actuator '"
+                       << name << "' (id: " << static_cast< int >(id) << ")");
       return false;
     }
 
     // torque constant from param
     double torque_constant;
     if (!param_nh.getParam("torque_constant", torque_constant)) {
-      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param "
-                       << param_nh.resolveName("torque_constant"));
+      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param '"
+                       << param_nh.resolveName("torque_constant") << "'");
       return false;
     }
 
@@ -91,8 +91,8 @@ public:
     typedef std::map< std::string, std::string > ModeNameMap;
     ModeNameMap mode_name_map;
     if (!param_nh.getParam("operating_mode_map", mode_name_map)) {
-      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param "
-                       << param_nh.resolveName("operating_mode_map"));
+      ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param '"
+                       << param_nh.resolveName("operating_mode_map") << "'");
       return false;
     }
     BOOST_FOREACH (const ModeNameMap::value_type &mode_name, mode_name_map) {
@@ -100,8 +100,8 @@ public:
       param_nh.getParam(ros::names::append("item_map", mode_name.second), item_map);
       const OperatingModePtr mode(makeOperatingMode(mode_name.second, item_map));
       if (!mode) {
-        ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to make operating mode "
-                         << mode_name.second << " for " << data_->name);
+        ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to make operating mode '"
+                         << mode_name.second << "' for the actuator '" << data_->name << "'");
         return false;
       }
       mode_map_[mode_name.first] = mode;
@@ -118,8 +118,9 @@ public:
         const std::map< std::string, OperatingModePtr >::const_iterator mode_to_stop(
             mode_map_.find(stopping_controller.name));
         if (mode_to_stop != mode_map_.end() && mode_to_stop->second == present_mode_) {
-          ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Stopping operating mode "
-                          << present_mode_->getName() << " for actuator " << data_->name);
+          ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Stopping operating mode '"
+                          << present_mode_->getName() << "' for the actuator '" << data_->name
+                          << "'");
           present_mode_->stopping();
           present_mode_ = OperatingModePtr();
           break;
@@ -133,8 +134,9 @@ public:
         const std::map< std::string, OperatingModePtr >::const_iterator mode_to_start(
             mode_map_.find(starting_controller.name));
         if (mode_to_start != mode_map_.end() && mode_to_start->second) {
-          ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Starting operating mode "
-                          << mode_to_start->second->getName() << " for actuator " << data_->name);
+          ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Starting operating mode '"
+                          << mode_to_start->second->getName() << "' for the actuator '"
+                          << data_->name << "'");
           present_mode_ = mode_to_start->second;
           present_mode_->starting();
           break;
@@ -184,8 +186,8 @@ private:
     } else if (mode_str == "velocity") {
       return boost::make_shared< VelocityMode >(data_, item_map);
     }
-    ROS_ERROR_STREAM("DynamixelActuator::makeOperatingMode(): Unknown operating mode name "
-                     << mode_str);
+    ROS_ERROR_STREAM("DynamixelActuator::makeOperatingMode(): Unknown operating mode name '"
+                     << mode_str << "'");
     return OperatingModePtr();
   }
 

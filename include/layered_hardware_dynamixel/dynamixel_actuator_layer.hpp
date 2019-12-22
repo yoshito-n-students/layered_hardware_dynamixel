@@ -44,13 +44,13 @@ public:
     // load actuator names from param "actuators"
     XmlRpc::XmlRpcValue ators_param;
     if (!param_nh.getParam("actuators", ators_param)) {
-      ROS_ERROR_STREAM("DynamixelActuatorLayer::init(): Failed to get param "
-                       << param_nh.resolveName("actuators"));
+      ROS_ERROR_STREAM("DynamixelActuatorLayer::init(): Failed to get param '"
+                       << param_nh.resolveName("actuators") << "'");
       return false;
     }
     if (ators_param.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
-      ROS_ERROR_STREAM("DynamixelActuatorLayer::init(): Param " << param_nh.resolveName("actuators")
-                                                                << " must be a struct");
+      ROS_ERROR_STREAM("DynamixelActuatorLayer::init(): Param '"
+                       << param_nh.resolveName("actuators") << "' must be a struct");
       return false;
     }
 
@@ -63,7 +63,8 @@ public:
       if (!ator->init(ator_param->first, dxl_wb_, hw, ator_param_nh)) {
         return false;
       }
-      ROS_INFO_STREAM("DynamixelActuatorLayer::init(): Initialized " << ator_param->first);
+      ROS_INFO_STREAM("DynamixelActuatorLayer::init(): Initialized the actuator '"
+                      << ator_param->first << "'");
       actuators_.push_back(ator);
     }
 
