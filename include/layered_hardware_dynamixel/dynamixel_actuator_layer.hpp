@@ -27,12 +27,12 @@ namespace layered_hardware_dynamixel {
 class DynamixelActuatorLayer : public lh::LayerBase {
 public:
   virtual bool init(hi::RobotHW &hw, ros::NodeHandle &param_nh, const std::string &urdf_str) {
-    // register actuator interfaces to the hardware so that other layers can find the interfaces
-    // (TODO: avoid to override interfaces)
-    hw.registerInterface(&state_iface_);
-    hw.registerInterface(&pos_iface_);
-    hw.registerInterface(&vel_iface_);
-    hw.registerInterface(&eff_iface_);
+    // make actuator interfaces registered to the hardware
+    // so that other layers can find the interfaces
+    makeRegistered< hi::ActuatorStateInterface >(hw);
+    makeRegistered< hi::PositionActuatorInterface >(hw);
+    makeRegistered< hi::VelocityActuatorInterface >(hw);
+    makeRegistered< hi::EffortActuatorInterface >(hw);
 
     // open USB serial device
     if (!dxl_wb_.init(param_nh.param< std::string >("serial_interface", "/dev/ttyUSB0").c_str(),
@@ -90,11 +90,16 @@ public:
   }
 
 private:
-  hi::ActuatorStateInterface state_iface_;
-  hi::PositionActuatorInterface pos_iface_;
-  hi::VelocityActuatorInterface vel_iface_;
-  hi::EffortActuatorInterface eff_iface_;
+  // make an hardware interface registered. the interface must be in the static memory space
+  // to allow access from outside of this plugin.
+  template < typename Interface > static void makeRegistered(hi::RobotHW &hw) {
+    if (!hw.get< Interface >()) {
+      static Interface iface;
+      hw.registerInterface(&iface);
+    }
+  }
 
+private:
   DynamixelWorkbench dxl_wb_;
   std::vector< DynamixelActuatorPtr > actuators_;
 };
