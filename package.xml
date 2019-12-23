@@ -52,18 +52,18 @@
   <build_depend>dynamixel_workbench_toolbox</build_depend>
   <build_depend>hardware_interface</build_depend>
   <build_depend>layered_hardware</build_depend>
+  <build_depend>pluginlib</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>urdf</build_depend>
   <build_export_depend>dynamixel_workbench_toolbox</build_export_depend>
   <build_export_depend>hardware_interface</build_export_depend>
   <build_export_depend>layered_hardware</build_export_depend>
+  <build_export_depend>pluginlib</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>urdf</build_export_depend>
   <exec_depend>dynamixel_workbench_toolbox</exec_depend>
   <exec_depend>hardware_interface</exec_depend>
   <exec_depend>layered_hardware</exec_depend>
+  <exec_depend>pluginlib</exec_depend>
   <exec_depend>roscpp</exec_depend>
-  <exec_depend>urdf</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

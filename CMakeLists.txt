@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamixel_workbench_toolbox
   hardware_interface
   layered_hardware
+  pluginlib
   roscpp
 )
 
@@ -106,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES layered_hardware_dynamixel_plugins
-  CATKIN_DEPENDS dynamixel_workbench_toolbox hardware_interface layered_hardware roscpp
+  CATKIN_DEPENDS dynamixel_workbench_toolbox hardware_interface layered_hardware pluginlib roscpp
 #  DEPENDS system_lib
 )
 
