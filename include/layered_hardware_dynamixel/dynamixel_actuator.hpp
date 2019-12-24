@@ -40,7 +40,8 @@ public:
     // finalize the present mode
     if (present_mode_) {
       ROS_INFO_STREAM("DynamixelActuator::~DynamixelActuator(): Stopping operating mode '"
-                      << present_mode_->getName() << "' for actuator '" << data_->name << "'");
+                      << present_mode_->getName() << "' for actuator '" << data_->name
+                      << "' (id: " << static_cast< int >(data_->id) << ")");
       present_mode_->stopping();
       present_mode_ = OperatingModePtr();
     }
@@ -101,7 +102,8 @@ public:
       const OperatingModePtr mode(makeOperatingMode(mode_name.second, item_map));
       if (!mode) {
         ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to make operating mode '"
-                         << mode_name.second << "' for the actuator '" << data_->name << "'");
+                         << mode_name.second << "' for the actuator '" << data_->name
+                         << "' (id: " << static_cast< int >(data_->id) << ")");
         return false;
       }
       mode_map_[mode_name.first] = mode;
@@ -159,7 +161,7 @@ public:
         if (mode_to_stop != mode_map_.end() && mode_to_stop->second == present_mode_) {
           ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Stopping operating mode '"
                           << present_mode_->getName() << "' for the actuator '" << data_->name
-                          << "'");
+                          << "' (id: " << static_cast< int >(data_->id) << ")");
           present_mode_->stopping();
           present_mode_ = OperatingModePtr();
           break;
@@ -175,7 +177,7 @@ public:
         if (mode_to_start != mode_map_.end() && mode_to_start->second) {
           ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Starting operating mode '"
                           << mode_to_start->second->getName() << "' for the actuator '"
-                          << data_->name << "'");
+                          << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
           present_mode_ = mode_to_start->second;
           present_mode_->starting();
           break;
@@ -226,7 +228,8 @@ private:
       return boost::make_shared< VelocityMode >(data_, item_map);
     }
     ROS_ERROR_STREAM("DynamixelActuator::makeOperatingMode(): Unknown operating mode name '"
-                     << mode_str << "'");
+                     << mode_str << " for the actuator '" << data_->name
+                     << "' (id: " << static_cast< int >(data_->id) << ")");
     return OperatingModePtr();
   }
 
