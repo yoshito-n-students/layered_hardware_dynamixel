@@ -1,7 +1,7 @@
 <launch>
 
     <!-- The robot description -->
-    <param name="robot_description" textfile="$(find layered_hardware)/urdf/example.urdf" />
+    <param name="robot_description" textfile="$(find layered_hardware_dynamixel)/urdf/single_dynamixel_example.urdf" />
 
     <!-- Hardware driver -->
     <node name="example_layered_hardware_node" pkg="layered_hardware" type="layered_hardware_node" output="screen">
@@ -11,7 +11,7 @@
             # upper (controller-side) to bottom (actuator-side)
             layers: [ joint_limits_layer, transmission_layer, dynamixel_actuator_layer ]
             joint_limits_layer:
-                type: layered_hardware/JointLimitsLayer
+                type: layered_hardware_extensions/ExtendedJointLimitsLayer
             transmission_layer:
                 type: layered_hardware/TransmissionLayer
             dynamixel_actuator_layer:
@@ -19,21 +19,14 @@
                 serial_interface: /dev/ttyUSB0
                 baudrate: 1000000
                 actuators:
-                    shoulder_actuator:
+                    dynamixel_actuator:
                         id: 1
                         torque_constant: 2.41
                         operating_mode_map:
-                            shoulder_controller: extended_position
-                    elbow_actuator:
-                        id: 2
-                        torque_constant: 2.41
-                        operating_mode_map:
-                            elbow_controller: extended_position
-                    wrist_actuator:
-                        id: 3
-                        torque_constant: 2.41
-                        operating_mode_map:
-                            wrist_controller: current
+                            posvel_controller: extended_position
+                            posveleff_controller: current_based_position
+                            velocity_controller: velocity
+                            effort_controller: current
         </rosparam>
     </node>
 
@@ -42,20 +35,26 @@
         joint_state_controller:
             type: joint_state_controller/JointStateController
             publish_rate: 20
-        shoulder_controller:
-            type: position_controllers/JointPositionController
-            joint: shoulder
-        elbow_controller:
-            type: position_controllers/JointPositionController
-            joint: elbow
-        wrist_controller:
+        posvel_controller:
+            type: posvel_controllers/JointPosVelController
+            joint: dynamixel_joint
+        posveleff_controller:
+            type: posveleff_controllers/JointPosVelEffController
+            joint: dynamixel_joint
+        velocity_controller:
+            type: velocity_controllers/JointVelocityController
+            joint: dynamixel_joint
+        effort_controller:
             type: effort_controllers/JointEffortController
-            joint: wrist
+            joint: dynamixel_joint
     </rosparam>
 
     <!-- Controller starter -->
     <node name="controller_starter" pkg="controller_manager" type="controller_manager" output="screen"
-          args="spawn joint_state_controller shoulder_controller elbow_controller wrist_controller" />
+          args="spawn joint_state_controller posvel_controller" />
+
+    <node name="controller_loader" pkg="controller_manager" type="controller_manager" output="screen"
+          args="load posveleff_controller velocity_controller effort_controller" />
 
     <!-- joint state msg to tf -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" />

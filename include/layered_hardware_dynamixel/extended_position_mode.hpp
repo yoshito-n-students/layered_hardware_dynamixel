@@ -39,12 +39,18 @@ public:
   }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
-    // send position command if updated
-    if (isNotNaN(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
+    // write profile velocity if updated
+    const bool do_write_vel(isNotNaN(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_));
+    if (do_write_vel) {
       writeProfileVelocity();
       prev_vel_cmd_ = data_->vel_cmd;
     }
-    if (isNotNaN(data_->pos_cmd) && areNotEqual(data_->pos_cmd, prev_pos_cmd_)) {
+
+    // write goal position if the goal pos or profile velocity have been updated
+    // to make the change affect
+    const bool do_write_pos(isNotNaN(data_->pos_cmd) &&
+                            (do_write_vel || areNotEqual(data_->pos_cmd, prev_pos_cmd_)));
+    if (do_write_pos) {
       writePositionCommand();
       prev_pos_cmd_ = data_->pos_cmd;
     }
