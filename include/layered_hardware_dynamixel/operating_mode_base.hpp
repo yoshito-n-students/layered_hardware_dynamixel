@@ -52,9 +52,11 @@ protected:
   }
 
   void readVelocity() {
-    float radps;
-    if (data_->dxl_wb->getVelocity(data_->id, &radps)) {
-      data_->vel = radps;
+    int32_t value;
+    // As of dynamixel_workbench_toolbox v2.0.0,
+    // DynamixelWorkbench::getVelocity() reads wrong item ...
+    if (data_->dxl_wb->itemRead(data_->id, "Present_Velocity", &value)) {
+      data_->vel = data_->dxl_wb->convertValue2Velocity(data_->id, value);
     } else {
       ROS_ERROR_STREAM(
           "OperatingModeBase::readVelocity(): Failed to read velocity from the actuator '"
