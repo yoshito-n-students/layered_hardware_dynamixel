@@ -72,6 +72,17 @@ public:
     return true;
   }
 
+  virtual bool prepareSwitch(const std::list< hi::ControllerInfo > &start_list,
+                             const std::list< hi::ControllerInfo > &stop_list) {
+    // ask to all actuators if controller switching is possible
+    BOOST_FOREACH (const DynamixelActuatorPtr &ator, actuators_) {
+      if (!ator->prepareSwitch(start_list, stop_list)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
                         const std::list< hi::ControllerInfo > &stop_list) {
     // notify controller switching to all actuators

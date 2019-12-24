@@ -110,6 +110,45 @@ public:
     return true;
   }
 
+  bool prepareSwitch(const std::list< hi::ControllerInfo > &starting_controller_list,
+                     const std::list< hi::ControllerInfo > &stopping_controller_list) {
+    // check if switching is possible by counting number of operating modes after switching.
+    // of course 0 or 1 is ok.
+
+    // number of modes before switching
+    std::size_t n_modes(present_mode_ ? 1 : 0);
+
+    // number of modes after stopping controllers
+    if (n_modes != 0) {
+      BOOST_FOREACH (const hi::ControllerInfo &stopping_controller, stopping_controller_list) {
+        const std::map< std::string, OperatingModePtr >::const_iterator mode_to_stop(
+            mode_map_.find(stopping_controller.name));
+        if (mode_to_stop != made_map_.end() && mode_to_stop->second == present_mode_) {
+          n_modes = 0;
+          break;
+        }
+      }
+    }
+
+    // number of modes after starting controllers
+    BOOST_FOREACH (const hi::ControllerInfo &starting_controller, starting_controller_list) {
+      const std::map< std::string, OperatingModePtr >::const_iterator mode_to_start(
+          mode_map_.find(starting_controller.name));
+      if (mode_to_start != mode_map_.end() && mode_to_start->second) {
+        ++n_modes;
+      }
+    }
+
+    if (n_modes != 0 && n_modes != 1) {
+      ROS_ERROR_STREAM("DynamixelActuator::prepareSwitch(): Rejected impossible controller "
+                       "switching for the actuator '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
+      return false;
+    }
+
+    return true;
+  }
+
   void doSwitch(const std::list< hi::ControllerInfo > &starting_controller_list,
                 const std::list< hi::ControllerInfo > &stopping_controller_list) {
     // stop actuator's operating mode according to stopping controller list
