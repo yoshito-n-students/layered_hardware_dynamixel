@@ -1,0 +1,24 @@
+<robot name="single_dynamixel_example">
+
+    <link name="dynamixel" />
+
+    <joint name="dynamixel_joint" type="continuous">
+        <parent link="dynamixel" />
+        <child link="none" />
+    </joint>
+
+    <transmission name="dynamixel_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="dynamixel_joint">
+            <hardwareInterface>hardware_interface/PosVelJointInterface</hardwareInterface>
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="dynamixel_actuator">
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <link name="none" />
+
+</robot>
