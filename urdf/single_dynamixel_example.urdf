@@ -11,6 +11,7 @@
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="dynamixel_joint">
             <hardwareInterface>hardware_interface/PosVelJointInterface</hardwareInterface>
+            <hardwareInterface>hardware_interface_extensions/PosVelEffJointInterface</hardwareInterface>
             <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
             <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         </joint>

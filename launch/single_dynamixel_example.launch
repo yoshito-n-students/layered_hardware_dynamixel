@@ -24,6 +24,7 @@
                         torque_constant: 2.41
                         operating_mode_map:
                             posvel_controller: extended_position
+                            posveleff_controller: current_based_position
                             velocity_controller: velocity
                             effort_controller: current
         </rosparam>
@@ -36,6 +37,9 @@
             publish_rate: 20
         posvel_controller:
             type: posvel_controllers/JointPosVelController
+            joint: dynamixel_joint
+        posveleff_controller:
+            type: posveleff_controllers/JointPosVelEffController
             joint: dynamixel_joint
         velocity_controller:
             type: velocity_controllers/JointVelocityController
@@ -50,7 +54,7 @@
           args="spawn joint_state_controller posvel_controller" />
 
     <node name="controller_loader" pkg="controller_manager" type="controller_manager" output="screen"
-          args="load velocity_controller effort_controller" />
+          args="load posveleff_controller velocity_controller effort_controller" />
 
     <!-- joint state msg to tf -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" />
