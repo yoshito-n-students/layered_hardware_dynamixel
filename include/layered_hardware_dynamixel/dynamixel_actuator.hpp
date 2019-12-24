@@ -114,8 +114,7 @@ public:
 
   bool prepareSwitch(const std::list< hi::ControllerInfo > &starting_controller_list,
                      const std::list< hi::ControllerInfo > &stopping_controller_list) {
-    // check if switching is possible by counting number of operating modes after switching.
-    // of course 0 or 1 is ok.
+    // check if switching is possible by counting number of operating modes after switching
 
     // number of modes before switching
     std::size_t n_modes(present_mode_ ? 1 : 0);
@@ -141,6 +140,7 @@ public:
       }
     }
 
+    // assert 0 or 1 operating modes. multiple modes are impossible.
     if (n_modes != 0 && n_modes != 1) {
       ROS_ERROR_STREAM("DynamixelActuator::prepareSwitch(): Rejected impossible controller "
                        "switching for the actuator '"
