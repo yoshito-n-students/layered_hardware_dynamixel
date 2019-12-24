@@ -125,7 +125,7 @@ public:
       BOOST_FOREACH (const hi::ControllerInfo &stopping_controller, stopping_controller_list) {
         const std::map< std::string, OperatingModePtr >::const_iterator mode_to_stop(
             mode_map_.find(stopping_controller.name));
-        if (mode_to_stop != made_map_.end() && mode_to_stop->second == present_mode_) {
+        if (mode_to_stop != mode_map_.end() && mode_to_stop->second == present_mode_) {
           n_modes = 0;
           break;
         }
