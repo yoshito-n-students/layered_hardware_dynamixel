@@ -27,6 +27,7 @@
                             posveleff_controller: current_based_position
                             velocity_controller: velocity
                             effort_controller: current
+                            reboot_controller: reboot
         </rosparam>
     </node>
 
@@ -47,6 +48,8 @@
         effort_controller:
             type: effort_controllers/JointEffortController
             joint: dynamixel_joint
+        reboot_controller:
+            type: empty_controller/EmptyController
     </rosparam>
 
     <!-- Controller starter -->
@@ -54,7 +57,7 @@
           args="spawn joint_state_controller posvel_controller" />
 
     <node name="controller_loader" pkg="controller_manager" type="controller_manager" output="screen"
-          args="load posveleff_controller velocity_controller effort_controller" />
+          args="load posveleff_controller velocity_controller effort_controller reboot_controller" />
 
     <!-- joint state msg to tf -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" />
