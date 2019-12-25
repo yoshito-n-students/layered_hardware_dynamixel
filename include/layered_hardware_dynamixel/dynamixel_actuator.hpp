@@ -142,7 +142,7 @@ public:
 
     // assert 0 or 1 operating modes. multiple modes are impossible.
     if (n_modes != 0 && n_modes != 1) {
-      ROS_ERROR_STREAM("DynamixelActuator::prepareSwitch(): Rejected impossible controller "
+      ROS_ERROR_STREAM("DynamixelActuator::prepareSwitch(): Rejected unfeasible controller "
                        "switching for the actuator '"
                        << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
       return false;
