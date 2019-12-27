@@ -24,7 +24,7 @@ public:
     // wait rebooted
     const ros::Time reboot_time(ros::Time::now());
     while (true) {
-      // break on successful ping
+      // return on successful ping
       if (data_->dxl_wb->ping(data_->id)) {
         ROS_INFO_STREAM("RebootMode::starting(): Actuator '"
                         << data_->name << "' (id: " << static_cast< int >(data_->id)
