@@ -38,7 +38,7 @@ public:
 
 protected:
   //
-  // ping functions for chiled classes
+  // instruction functions for chiled classes
   //
 
   bool ping() {
@@ -47,6 +47,17 @@ protected:
       ROS_ERROR_STREAM("OperatingModeBase::ping(): Failed to ping to '"
                        << data_->name << "' (id: " << static_cast< int >(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench::ping()"));
+      return false;
+    }
+    return true;
+  }
+
+  bool reboot() {
+    const char *log(NULL);
+    if (!data_->dxl_wb->reboot(data_->id, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::ping(): Failed to reboot '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::reboot()"));
       return false;
     }
     return true;
