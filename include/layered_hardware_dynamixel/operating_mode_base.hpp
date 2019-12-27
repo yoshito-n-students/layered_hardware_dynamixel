@@ -38,127 +38,202 @@ public:
 
 protected:
   //
+  // ping functions for chiled classes
+  //
+
+  bool ping() {
+    const char *log(NULL);
+    if (!data_->dxl_wb->ping(data_->id, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::ping(): Failed to ping to '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::ping()"));
+      return false;
+    }
+    return true;
+  }
+
+  //
   // read functions for chiled classes
   //
 
-  void readPosition() {
+  bool readPosition() {
     float rad;
-    if (data_->dxl_wb->getRadian(data_->id, &rad)) {
-      data_->pos = rad;
-    } else {
-      ROS_ERROR_STREAM(
-          "OperatingModeBase::readPosition(): Failed to read position from the actuator '"
-          << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
+    const char *log(NULL);
+    if (!data_->dxl_wb->getRadian(data_->id, &rad, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::readPosition(): Failed to read position from '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::getRadian()"));
+      return false;
     }
+    data_->pos = rad;
+    return true;
   }
 
-  void readVelocity() {
+  bool readVelocity() {
     int32_t value;
+    const char *log(NULL);
     // As of dynamixel_workbench_toolbox v2.0.0,
     // DynamixelWorkbench::getVelocity() reads wrong item ...
-    if (data_->dxl_wb->itemRead(data_->id, "Present_Velocity", &value)) {
-      data_->vel = data_->dxl_wb->convertValue2Velocity(data_->id, value);
-    } else {
-      ROS_ERROR_STREAM(
-          "OperatingModeBase::readVelocity(): Failed to read velocity from the actuator '"
-          << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
+    if (!data_->dxl_wb->itemRead(data_->id, "Present_Velocity", &value, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::readVelocity(): Failed to read velocity from '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::itemRead()"));
+      return false;
     }
+    data_->vel = data_->dxl_wb->convertValue2Velocity(data_->id, value);
+    return true;
   }
 
-  void readEffort() {
+  bool readEffort() {
     int32_t value;
-    // TODO:
-    if (data_->dxl_wb->itemRead(data_->id, "Present_Current", &value)) {
-      // TODO: use the latest API
-      data_->eff =
-          data_->dxl_wb->convertValue2Current(/* data_->id,*/ value) * data_->torque_constant;
-    } else {
-      ROS_ERROR_STREAM("OperatingModeBase::readEffort(): Failed to read current from the actuator '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
+    const char *log(NULL);
+    if (!data_->dxl_wb->itemRead(data_->id, "Present_Current", &value, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::readEffort(): Failed to read current from '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::itemRead()"));
+      return false;
     }
+    // TODO: use new API once supported
+    data_->eff =
+        data_->dxl_wb->convertValue2Current(/* data_->id,*/ value) * data_->torque_constant;
+    return true;
   }
 
-  void readState() {
-    readPosition();
-    readVelocity();
-    readEffort();
+  bool readState() {
+    // if one fails, "return readPosition() && readVelocity() && readEffort()" does not call others.
+    // on the other hand, lines below calls all anyway to read info as much as possible.
+    const bool pos_result(readPosition());
+    const bool vel_result(readVelocity());
+    const bool eff_result(readEffort());
+    return pos_result && vel_result && eff_result;
   }
 
   //
   // write functions for child classes
   //
 
-  void enableOperatingMode(bool (DynamixelWorkbench::*const set_func)(uint8_t, const char **)) {
-    // 1. set torque off to change operating modes
-    // 2. change operating modes
-    // 3. activate new operating mode by setting torque on
-    if (!data_->dxl_wb->torqueOff(data_->id) || !(data_->dxl_wb->*set_func)(data_->id, NULL) ||
-        !data_->dxl_wb->torqueOn(data_->id)) {
-      ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to change operating modes "
-                       "of the actuator '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
+  bool enableOperatingMode(bool (DynamixelWorkbench::*const set_func)(uint8_t, const char **)) {
+    const char *log;
+    // set torque off to change operating modes
+    log = NULL;
+    if (!data_->dxl_wb->torqueOff(data_->id, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to disable torque of '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::torqueOff()"));
+      return false;
     }
+    // change operating modes
+    log = NULL;
+    if (!(data_->dxl_wb->*set_func)(data_->id, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to set operating mode of '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench"));
+      return false;
+    }
+    // activate new operating mode by setting torque on
+    log = NULL;
+    if (!data_->dxl_wb->torqueOn(data_->id, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to enable torque of '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::torqueOn()"));
+      return false;
+    }
+    return true;
   }
 
-  void torqueOff() {
-    if (!data_->dxl_wb->torqueOff(data_->id)) {
-      ROS_ERROR_STREAM("OperatingModeBase::torqueOff(): Failed to disable torque of the actuator '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
+  bool torqueOff() {
+    const char *log(NULL);
+    if (!data_->dxl_wb->torqueOff(data_->id, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::torqueOff(): Failed to disable torque of '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::torqueOff()"));
+      return false;
     }
+    return true;
   }
 
-  void writeItems(const std::map< std::string, int > &item_map) {
+  bool clearMultiTurn() {
+    const char *log(NULL);
+    if (!data_->dxl_wb->clearMultiTurn(data_->id, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::clearMultiTurn(): Failed to clear multi turn count of '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id) << "): "
+                       << (log ? log : "No log from DynamixelWorkbench::clearMultiTurn()"));
+      return false;
+    }
+    return true;
+  }
+
+  bool writeItems(const std::map< std::string, int > &item_map) {
     typedef std::map< std::string, int > ItemMap;
     BOOST_FOREACH (const ItemMap::value_type item, item_map) {
-      if (!data_->dxl_wb->itemWrite(data_->id, item.first.c_str(),
-                                    static_cast< int32_t >(item.second))) {
-        ROS_ERROR_STREAM("OperatingModeBase::writeItems(): Failed to write control item '"
-                         << item.first << "' of the actuator '" << data_->name << "' to "
-                         << item.second);
+      const int32_t value(static_cast< int32_t >(item.second));
+      const char *log(NULL);
+      if (!data_->dxl_wb->itemWrite(data_->id, item.first.c_str(), value, &log)) {
+        ROS_ERROR_STREAM("OperatingModeBase::writeItems(): Failed to set control table item '"
+                         << item.first << "' of '" << data_->name
+                         << "' (id: " << static_cast< int >(data_->id) << " to " << value << ": "
+                         << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
+        return false;
       }
     }
+    return true;
   }
 
-  void writePositionCommand() {
-    if (!data_->dxl_wb->goalPosition(data_->id, static_cast< float >(data_->pos_cmd))) {
-      ROS_ERROR_STREAM("OperatingModeBase::writePositionCommand(): Failed to write position "
-                       "command to the actuator '"
-                       << data_->name << "' (command: " << data_->pos_cmd
-                       << ", id: " << static_cast< int >(data_->id) << ")");
+  bool writePositionCommand() {
+    const float cmd(static_cast< float >(data_->pos_cmd));
+    const char *log(NULL);
+    if (!data_->dxl_wb->goalPosition(data_->id, cmd, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::writePositionCommand(): Failed to set goal position of '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ") to "
+                       << cmd << ": "
+                       << (log ? log : "No log from DynamixelWorkbench::goalPosition()"));
+      return false;
     }
+    return true;
   }
 
-  void writeVelocityCommand() {
-    if (!data_->dxl_wb->goalVelocity(data_->id, static_cast< float >(data_->vel_cmd))) {
-      ROS_ERROR_STREAM("OperatingModeBase::writeVelocityCommand(): Failed to write velocity "
-                       "command to the actuator '"
-                       << data_->name << "' (command: " << data_->vel_cmd
-                       << ", id: " << static_cast< int >(data_->id) << ")");
+  bool writeVelocityCommand() {
+    const float cmd(static_cast< float >(data_->vel_cmd));
+    const char *log(NULL);
+    if (!data_->dxl_wb->goalVelocity(data_->id, cmd, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::writeVelocityCommand(): Failed to set goal velocity of '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ") to "
+                       << cmd << ": "
+                       << (log ? log : "No log from DynamixelWorkbench::goalVelocity()"));
+      return false;
     }
+    return true;
   }
 
-  void writeProfileVelocity() {
-    const double prof_vel_cmd(std::abs(data_->vel_cmd));
-    if (!data_->dxl_wb->itemWrite(data_->id, "Profile_Velocity",
-                                  data_->dxl_wb->convertVelocity2Value(data_->id, prof_vel_cmd))) {
-      ROS_ERROR_STREAM("OperatingModeBase::writeProfileVelocity(): Failed to write profile "
-                       "velocity to the actuator '"
-                       << data_->name << "' (command: " << prof_vel_cmd
-                       << ", id: " << static_cast< int >(data_->id) << ")");
+  bool writeProfileVelocity() {
+    const float cmd(static_cast< float >(std::abs(data_->vel_cmd)));
+    const int32_t cmd_value(data_->dxl_wb->convertVelocity2Value(data_->id, cmd));
+    const char *log(NULL);
+    if (!data_->dxl_wb->itemWrite(data_->id, "Profile_Velocity", cmd_value, &log)) {
+      ROS_ERROR_STREAM(
+          "OperatingModeBase::writeProfileVelocity(): Failed to set profile velocity of '"
+          << data_->name << "' (id: " << static_cast< int >(data_->id) << ") to " << cmd
+          << " (value: " << cmd_value
+          << "): " << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
+      return false;
     }
+    return true;
   }
 
-  void writeEffortCommand() {
-    const double cur_cmd(data_->eff_cmd / data_->torque_constant);
-    if (!data_->dxl_wb->itemWrite(data_->id, "Goal_Current",
-                                  // TODO: use the latest API
-                                  data_->dxl_wb->convertCurrent2Value(
-                                      /* data_->id, */ cur_cmd))) {
-      ROS_ERROR_STREAM("OperatingModeBase::writeEffortCommand(): Failed to write current command "
-                       "to the actuator '"
-                       << data_->name << "' (command: " << cur_cmd
-                       << ", id: " << static_cast< int >(data_->id) << ")");
+  bool writeEffortCommand() {
+    const float cmd(data_->eff_cmd / data_->torque_constant);
+    // TODO: use new API once supported
+    const int16_t cmd_value(data_->dxl_wb->convertCurrent2Value(
+        /* data_->id, */ cmd));
+    const char *log(NULL);
+    if (!data_->dxl_wb->itemWrite(data_->id, "Goal_Current", cmd_value, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::writeEffortCommand(): Failed to set goal current of '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ") to "
+                       << cmd << " (value: " << cmd_value
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
+      return false;
     }
+    return true;
   }
 
   //
