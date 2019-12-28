@@ -52,10 +52,27 @@ protected:
     return true;
   }
 
+  bool pingFor(const ros::Duration &timeout) {
+    const ros::Time timeout_abs(ros::Time::now() + timeout);
+    while (true) {
+      if (ros::Time::now() > timeout_abs) {
+        ROS_ERROR_STREAM("OperatingModeBase::pingFor(): No ping response from '"
+                         << data_->name << "' (id: " << static_cast< int >(data_->id) << ") for "
+                         << timeout.toSec() << " s");
+        return false;
+      }
+      if (data_->dxl_wb->ping(data_->id)) {
+        return true;
+      }
+    }
+    // never reach here
+  }
+
   bool reboot() {
+    // instruct rebooting
     const char *log(NULL);
     if (!data_->dxl_wb->reboot(data_->id, &log)) {
-      ROS_ERROR_STREAM("OperatingModeBase::ping(): Failed to reboot '"
+      ROS_ERROR_STREAM("OperatingModeBase::reboot(): Failed to reboot '"
                        << data_->name << "' (id: " << static_cast< int >(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench::reboot()"));
       return false;
