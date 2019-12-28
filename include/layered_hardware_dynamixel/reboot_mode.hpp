@@ -15,29 +15,9 @@ public:
   RebootMode(const DynamixelActuatorDataPtr &data) : OperatingModeBase("reboot", data) {}
 
   virtual void starting() {
-    // instruct rebooting
-    if (!data_->dxl_wb->reboot(data_->id)) {
-      ROS_ERROR_STREAM("RebootMode::starting(): Failed to reboot the actuator '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
-      return;
-    }
-    // wait rebooted
-    const ros::Time reboot_time(ros::Time::now());
-    while (true) {
-      // return on successful ping
-      if (data_->dxl_wb->ping(data_->id)) {
-        ROS_INFO_STREAM("RebootMode::starting(): Actuator '"
-                        << data_->name << "' (id: " << static_cast< int >(data_->id)
-                        << ") was successfully rebooted");
-        return;
-      }
-      // or timeout
-      if ((ros::Time::now() - reboot_time).toSec() > 0.5) {
-        ROS_ERROR_STREAM("RebootMode::starting(): No ping response after reboot from the actuator '"
-                         << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
-        return;
-      }
-    }
+    reboot();
+    // confirm the actuator has been rebooted by ping for certain duration
+    pingFor(ros::Duration(0.5));
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
