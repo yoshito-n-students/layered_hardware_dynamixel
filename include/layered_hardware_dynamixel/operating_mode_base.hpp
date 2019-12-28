@@ -101,7 +101,7 @@ protected:
     int32_t value;
     const char *log(NULL);
     // As of dynamixel_workbench_toolbox v2.0.0,
-    // DynamixelWorkbench::getVelocity() reads wrong item ...
+    // DynamixelWorkbench::getVelocity() reads a wrong item ...
     if (!data_->dxl_wb->itemRead(data_->id, "Present_Velocity", &value, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::readVelocity(): Failed to read velocity from '"
                        << data_->name << "' (id: " << static_cast< int >(data_->id)
@@ -129,7 +129,7 @@ protected:
 
   bool readState() {
     // if one fails, "return readPosition() && readVelocity() && readEffort()" does not call others.
-    // on the other hand, lines below calls all anyway to read info as much as possible.
+    // on the other hand, lines below call all anyway to read info as much as possible.
     const bool pos_result(readPosition());
     const bool vel_result(readVelocity());
     const bool eff_result(readEffort());
@@ -142,7 +142,7 @@ protected:
 
   bool enableOperatingMode(bool (DynamixelWorkbench::*const set_func)(uint8_t, const char **)) {
     const char *log;
-    // set torque off to change operating modes
+    // disable torque to make the actuator ready to change operating modes
     log = NULL;
     if (!data_->dxl_wb->torqueOff(data_->id, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to disable torque of '"
@@ -158,7 +158,7 @@ protected:
                        << "): " << (log ? log : "No log from DynamixelWorkbench"));
       return false;
     }
-    // activate new operating mode by setting torque on
+    // activate new operating mode by enabling torque
     log = NULL;
     if (!data_->dxl_wb->torqueOn(data_->id, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to enable torque of '"
