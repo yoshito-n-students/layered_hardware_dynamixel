@@ -11,6 +11,8 @@
 #include <ros/duration.h>
 #include <ros/time.h>
 
+#include <boost/optional.hpp>
+
 namespace layered_hardware_dynamixel {
 
 class CurrentBasedPositionMode : public OperatingModeBase {
@@ -33,6 +35,8 @@ public:
     prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
     prev_eff_cmd_ = std::numeric_limits< double >::quiet_NaN();
+
+    cached_pos_ = boost::none;
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
@@ -55,6 +59,20 @@ public:
       prev_eff_cmd_ = data_->eff_cmd;
     }
 
+    // if the profile velocity is 0, the user would want the actuator
+    // to stop at the present position but 0 actually means unlimited.
+    // to solve this mismatch, freeze the position command on that case.
+    const bool do_freeze_pos(isNotNaN(data_->vel_cmd) &&
+                             data_->dxl_wb->convertVelocity2Value(data_->id, data_->vel_cmd) == 0);
+    if (do_freeze_pos) {
+      if (!cached_pos_) {
+        cached_pos_ = data_->pos;
+      }
+      data_->pos_cmd = cached_pos_.get();
+    } else {
+      cached_pos_ = boost::none;
+    }
+
     // write goal position if the goal pos, profile velocity or effort limit have been updated
     // to make the change affect
     const bool do_write_pos(
@@ -71,6 +89,7 @@ public:
 private:
   const std::map< std::string, int > item_map_;
   double prev_pos_cmd_, prev_vel_cmd_, prev_eff_cmd_;
+  boost::optional< double > cached_pos_;
 };
 } // namespace layered_hardware_dynamixel
 
