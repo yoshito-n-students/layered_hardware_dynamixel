@@ -2,6 +2,11 @@
 Changelog for package layered_hardware_dynamixel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2020-01-07)
+------------------
+* Freeze position command if velocity command is 0
+* Refactored operating modes
+
 0.0.2 (2019-12-25)
 ------------------
 * Reject unfeasible controller switching in advance
