@@ -39,7 +39,7 @@ item_map:
 ```
 
 #### <u>Example</u>
-see [launch/example.launch](launch/example.launch)
+see [launch/single_dynamixel_example.launch](launch/single_dynamixel_example.launch)
 
 ## Tips
 * if you feel slow communication speed with actuators, try adjusting the latency timer for your usb-serial device according to [this comment](https://github.com/ROBOTIS-GIT/DynamixelSDK/blob/3ae73bf5179fbad2bd366f39a952ce549c10c58e/c%2B%2B/src/dynamixel_sdk/port_handler_linux.cpp#L33-L56)
