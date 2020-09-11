@@ -122,8 +122,8 @@ protected:
       return false;
     }
     // TODO: use new API once supported
-    data_->eff =
-        data_->dxl_wb->convertValue2Current(/* data_->id,*/ value) * data_->torque_constant;
+    data_->eff = data_->dxl_wb->convertValue2Current(/* data_->id,*/ value) *
+                 data_->torque_constant / 1000.0;
     return true;
   }
 
@@ -249,7 +249,7 @@ protected:
   }
 
   bool writeEffortCommand() {
-    const float cmd(data_->eff_cmd / data_->torque_constant);
+    const float cmd(data_->eff_cmd / data_->torque_constant * 1000.0);
     // TODO: use new API once supported
     const int16_t cmd_value(data_->dxl_wb->convertCurrent2Value(
         /* data_->id, */ cmd));
