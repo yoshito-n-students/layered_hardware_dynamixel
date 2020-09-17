@@ -2,6 +2,11 @@
 Changelog for package layered_hardware_dynamixel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.4 (2020-XX-XX)
+------------------
+* Fix the unit of effort (mNm to Nm)
+* Write an item map on enabling the current based position mode
+
 0.0.3 (2020-01-07)
 ------------------
 * Freeze position command if velocity command is 0
