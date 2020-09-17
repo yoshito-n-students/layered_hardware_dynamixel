@@ -2,7 +2,7 @@
 Changelog for package layered_hardware_dynamixel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.4 (2020-XX-XX)
+0.0.4 (2020-09-18)
 ------------------
 * Fix the unit of effort (mNm to Nm)
 * Write an item map on enabling the current based position mode
