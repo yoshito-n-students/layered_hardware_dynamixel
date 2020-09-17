@@ -19,7 +19,7 @@ class CurrentBasedPositionMode : public OperatingModeBase {
 public:
   CurrentBasedPositionMode(const DynamixelActuatorDataPtr &data,
                            const std::map< std::string, int > &item_map)
-      : OperatingModeBase("current_based_position", data) {}
+      : OperatingModeBase("current_based_position", data), item_map_(item_map) {}
 
   virtual void starting() {
     // switch to current-based position mode
