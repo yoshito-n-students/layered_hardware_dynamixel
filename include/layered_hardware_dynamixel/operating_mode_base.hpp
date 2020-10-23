@@ -127,13 +127,33 @@ protected:
     return true;
   }
 
+  bool readAdditionalStates() {
+    typedef std::map< std::string, hie::ByteArray > StateMap;
+    bool result(true);
+    BOOST_FOREACH (StateMap::value_type &state, data_->additional_states) {
+      int32_t value;
+      const char *log(NULL);
+      if (data_->dxl_wb->itemRead(data_->id, state.first.c_str(), &value, &log)) {
+        state.second = hie::ByteArray::from(value);
+      } else {
+        ROS_ERROR_STREAM("OperatingModeBase::readAdditionalStates(): Failed to read '"
+                         << state.first << "' from '" << data_->name
+                         << "' (id: " << static_cast< int >(data_->id)
+                         << "): " << (log ? log : "No log from DynamixelWorkbench::itemRead()"));
+        result = false;
+      }
+    }
+    return result;
+  }
+
   bool readState() {
-    // if one fails, "return readPosition() && readVelocity() && readEffort()" does not call others.
+    // if one fails, "return readPosition() && readVelocity() && ..." does not call others.
     // on the other hand, lines below call all anyway to read info as much as possible.
     const bool pos_result(readPosition());
     const bool vel_result(readVelocity());
     const bool eff_result(readEffort());
-    return pos_result && vel_result && eff_result;
+    const bool additional_result(readAdditionalStates());
+    return pos_result && vel_result && eff_result && additional_result;
   }
 
   //
@@ -260,6 +280,22 @@ protected:
                        << cmd << " (value: " << cmd_value
                        << "): " << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
       return false;
+    }
+    return true;
+  }
+
+  bool writeAdditionalCommands() {
+    typedef std::map< std::string, hie::ByteArray > CommandMap;
+    BOOST_FOREACH (const CommandMap::value_type &cmd, data_->additional_cmds) {
+      const int32_t value(cmd.second.to< int32_t >());
+      const char *log(NULL);
+      if (!data_->dxl_wb->itemWrite(data_->id, cmd.first.c_str(), value, &log)) {
+        ROS_ERROR_STREAM("OperatingModeBase::writeAdditionalCommands(): Failed to set '"
+                         << cmd.first << "' of '" << data_->name
+                         << "' (id: " << static_cast< int >(data_->id) << " to " << value << ": "
+                         << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
+        return false;
+      }
     }
     return true;
   }

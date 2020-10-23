@@ -4,11 +4,13 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 #include <hardware_interface/actuator_command_interface.h>
 #include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/controller_info.h>
 #include <hardware_interface/robot_hw.h>
+#include <hardware_interface_extensions/byte_array_interface.hpp>
 #include <layered_hardware_dynamixel/clear_multi_turn_mode.hpp>
 #include <layered_hardware_dynamixel/common_namespaces.hpp>
 #include <layered_hardware_dynamixel/current_based_position_mode.hpp>
@@ -73,8 +75,15 @@ public:
       return false;
     }
 
+    // names of additinal states & commands from param (optional)
+    const std::vector< std::string > additional_state_names(
+        param_nh.param("additional_states", std::vector< std::string >()));
+    const std::vector< std::string > additional_cmd_names(
+        param_nh.param("additional_commands", std::vector< std::string >()));
+
     // allocate data structure
-    data_.reset(new DynamixelActuatorData(name, dxl_wb, id, torque_constant));
+    data_.reset(new DynamixelActuatorData(name, dxl_wb, id, torque_constant, additional_state_names,
+                                          additional_cmd_names));
 
     // register actuator states & commands to corresponding hardware interfaces
     const hi::ActuatorStateHandle state_handle(data_->name, &data_->pos, &data_->vel, &data_->eff);
@@ -86,6 +95,21 @@ public:
         !registerActuatorTo< hi::EffortActuatorInterface >(
             hw, hi::ActuatorHandle(state_handle, &data_->eff_cmd))) {
       return false;
+    }
+
+    // register additional states & commands to corresponding hardware interfaces
+    typedef std::map< std::string, hie::ByteArray > ByteArrayMap;
+    BOOST_FOREACH (ByteArrayMap::value_type &state, data_->additional_states) {
+      if (!registerActuatorTo< hie::ByteArrayStateInterface >(
+              hw, hie::ByteArrayHandle(data_->name + "/" + state.first, &state.second))) {
+        return false;
+      }
+    }
+    BOOST_FOREACH (ByteArrayMap::value_type &cmd, data_->additional_cmds) {
+      if (!registerActuatorTo< hie::ByteArrayCommandInterface >(
+              hw, hie::ByteArrayHandle(data_->name + "/" + cmd.first, &cmd.second))) {
+        return false;
+      }
     }
 
     // make operating mode map from ros-controller name to dynamixel's operating mode
