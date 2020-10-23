@@ -29,7 +29,7 @@ public:
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
   }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) { readState(); }
+  virtual void read(const ros::Time &time, const ros::Duration &period) { readAllStates(); }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
     if (isNotNaN(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {

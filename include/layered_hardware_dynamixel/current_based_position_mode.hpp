@@ -28,7 +28,7 @@ public:
     writeItems(item_map_);
 
     // use the present position as the initial position command
-    readState();
+    readAllStates();
     data_->pos_cmd = data_->pos;
     data_->vel_cmd = 0.; // use velocity limit in the dynamixel's control table
     data_->eff_cmd = 0.; // use torque limit in the dynamixel's control table
@@ -40,8 +40,8 @@ public:
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
-    // read pos, vel & eff
-    readState();
+    // read pos, vel, eff, etc
+    readAllStates();
   }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {

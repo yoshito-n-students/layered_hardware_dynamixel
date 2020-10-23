@@ -17,8 +17,8 @@ public:
   virtual void starting() { torqueOff(); }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
-    // read pos, vel & eff
-    readState();
+    // read pos, vel, eff, etc
+    readAllStates();
   }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {

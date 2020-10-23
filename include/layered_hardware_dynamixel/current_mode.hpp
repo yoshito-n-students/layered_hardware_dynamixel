@@ -27,7 +27,7 @@ public:
     prev_eff_cmd_ = std::numeric_limits< double >::quiet_NaN();
   }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) { readState(); }
+  virtual void read(const ros::Time &time, const ros::Duration &period) { readAllStates(); }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
     if (isNotNaN(data_->eff_cmd) && areNotEqual(data_->eff_cmd, prev_eff_cmd_)) {
