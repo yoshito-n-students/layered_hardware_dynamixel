@@ -28,6 +28,9 @@
                             velocity_controller: velocity
                             effort_controller: current
                             reboot_controller: reboot
+                        additional_states:
+                            - Present_Input_Voltage
+                            - Present_Temperature
         </rosparam>
     </node>
 
@@ -36,6 +39,9 @@
         joint_state_controller:
             type: joint_state_controller/JointStateController
             publish_rate: 20
+        additional_state_controller:
+            type: byte_array_controllers/ByteArrayStateController
+            interval: 1.0
         posvel_controller:
             type: posvel_controllers/JointPosVelController
             joint: dynamixel_joint
@@ -54,7 +60,7 @@
 
     <!-- Controller starter -->
     <node name="controller_starter" pkg="controller_manager" type="controller_manager" output="screen"
-          args="spawn joint_state_controller posvel_controller" />
+          args="spawn joint_state_controller additional_state_controller posvel_controller" />
 
     <node name="controller_loader" pkg="controller_manager" type="controller_manager" output="screen"
           args="load posveleff_controller velocity_controller effort_controller reboot_controller" />
