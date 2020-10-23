@@ -25,10 +25,10 @@ struct DynamixelActuatorData {
     // TODO: this sorts names and breaks the original order.
     //       use std::vector< std::pair<> > instead of std::map<> .
     BOOST_FOREACH (const std::string &name, additional_state_names) {
-      additional_states[name] = hie::ByteArray::from< int32_t >(0);
+      additional_states[name] = hie::ByteArray();
     }
     BOOST_FOREACH (const std::string &name, additional_cmd_names) {
-      additional_cmds[name] = hie::ByteArray::from< int32_t >(0);
+      additional_cmds[name] = hie::ByteArray();
     }
   }
 

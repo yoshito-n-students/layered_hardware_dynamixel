@@ -287,6 +287,10 @@ protected:
   bool writeAdditionalCommands() {
     typedef std::map< std::string, hie::ByteArray > CommandMap;
     BOOST_FOREACH (const CommandMap::value_type &cmd, data_->additional_cmds) {
+      if (!cmd.second.canConvertTo< int32_t >()) {
+        // print an warning ??
+        continue;
+      }
       const int32_t value(cmd.second.to< int32_t >());
       const char *log(NULL);
       if (!data_->dxl_wb->itemWrite(data_->id, cmd.first.c_str(), value, &log)) {
