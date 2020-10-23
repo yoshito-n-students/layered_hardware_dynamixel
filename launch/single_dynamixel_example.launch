@@ -28,6 +28,9 @@
                             velocity: velocity
                             effort: current
                             reboot_controller: reboot
+                        additional_states:
+                            - Present_Input_Voltage
+                            - Present_Temperature
         </rosparam>
     </node>
 
@@ -36,6 +39,9 @@
         joint_state_controller:
             type: joint_state_controller/JointStateController
             publish_rate: 20
+        additional_state_controller:
+            type: byte_array_controllers/ByteArrayStateController
+            interval: 1.0
         posvel_controller:
             type: posvel_controllers/JointPosVelController
             joint: dynamixel_joint
