@@ -28,7 +28,7 @@ public:
     writeItems(item_map_);
 
     // use the present position as the initial command
-    readState();
+    readAllStates();
     data_->pos_cmd = data_->pos;
     prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
     data_->vel_cmd = 0.;
@@ -38,8 +38,8 @@ public:
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
-    // read pos, vel, & eff
-    readState();
+    // read pos, vel, eff, etc
+    readAllStates();
   }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {

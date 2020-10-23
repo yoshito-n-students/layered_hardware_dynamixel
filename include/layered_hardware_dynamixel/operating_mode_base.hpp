@@ -146,7 +146,7 @@ protected:
     return result;
   }
 
-  bool readState() {
+  bool readAllStates() {
     // if one fails, "return readPosition() && readVelocity() && ..." does not call others.
     // on the other hand, lines below call all anyway to read info as much as possible.
     const bool pos_result(readPosition());
