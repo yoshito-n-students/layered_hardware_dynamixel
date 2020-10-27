@@ -40,7 +40,7 @@
             type: joint_state_controller/JointStateController
             publish_rate: 20
         additional_state_controller:
-            type: byte_array_controllers/ByteArrayStateController
+            type: integer_controllers/Int32StateController
             interval: 1.0
         posvel_controller:
             type: posvel_controllers/JointPosVelController
