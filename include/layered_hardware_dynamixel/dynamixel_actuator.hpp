@@ -1,6 +1,7 @@
 #ifndef LAYERED_HARDWARE_DYNAMIXEL_DYNAMIXEL_ACTUATOR_HPP
 #define LAYERED_HARDWARE_DYNAMIXEL_DYNAMIXEL_ACTUATOR_HPP
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <string>
@@ -10,7 +11,7 @@
 #include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/controller_info.h>
 #include <hardware_interface/robot_hw.h>
-#include <hardware_interface_extensions/byte_array_interface.hpp>
+#include <hardware_interface_extensions/integer_interface.hpp>
 #include <layered_hardware_dynamixel/clear_multi_turn_mode.hpp>
 #include <layered_hardware_dynamixel/common_namespaces.hpp>
 #include <layered_hardware_dynamixel/controller_set.hpp>
@@ -100,16 +101,16 @@ public:
     }
 
     // register additional states & commands to corresponding hardware interfaces
-    typedef std::map< std::string, hie::ByteArray > ByteArrayMap;
-    BOOST_FOREACH (ByteArrayMap::value_type &state, data_->additional_states) {
-      if (!registerActuatorTo< hie::ByteArrayStateInterface >(
-              hw, hie::ByteArrayHandle(data_->name + "/" + state.first, &state.second))) {
+    typedef std::map< std::string, std::int32_t > Int32Map;
+    BOOST_FOREACH (Int32Map::value_type &state, data_->additional_states) {
+      if (!registerActuatorTo< hie::Int32StateInterface >(
+              hw, hie::Int32StateHandle(data_->name + "/" + state.first, &state.second))) {
         return false;
       }
     }
-    BOOST_FOREACH (ByteArrayMap::value_type &cmd, data_->additional_cmds) {
-      if (!registerActuatorTo< hie::ByteArrayCommandInterface >(
-              hw, hie::ByteArrayHandle(data_->name + "/" + cmd.first, &cmd.second))) {
+    BOOST_FOREACH (Int32Map::value_type &cmd, data_->additional_cmds) {
+      if (!registerActuatorTo< hie::Int32Interface >(
+              hw, hie::Int32Handle(data_->name + "/" + cmd.first, &cmd.second, &cmd.second))) {
         return false;
       }
     }

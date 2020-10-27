@@ -2,6 +2,7 @@
 #define LAYERED_HARDWARE_DYNAMIXEL_OPERATING_MODE_BASE_HPP
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <string>
@@ -128,14 +129,11 @@ protected:
   }
 
   bool readAdditionalStates() {
-    typedef std::map< std::string, hie::ByteArray > StateMap;
+    typedef std::map< std::string, std::int32_t > StateMap;
     bool result(true);
     BOOST_FOREACH (StateMap::value_type &state, data_->additional_states) {
-      int32_t value;
       const char *log(NULL);
-      if (data_->dxl_wb->itemRead(data_->id, state.first.c_str(), &value, &log)) {
-        state.second = hie::ByteArray::from(value);
-      } else {
+      if (!data_->dxl_wb->itemRead(data_->id, state.first.c_str(), &state.second, &log)) {
         ROS_ERROR_STREAM("OperatingModeBase::readAdditionalStates(): Failed to read '"
                          << state.first << "' from '" << data_->name
                          << "' (id: " << static_cast< int >(data_->id)
@@ -285,19 +283,14 @@ protected:
   }
 
   bool writeAdditionalCommands() {
-    typedef std::map< std::string, hie::ByteArray > CommandMap;
+    typedef std::map< std::string, std::int32_t > CommandMap;
     BOOST_FOREACH (const CommandMap::value_type &cmd, data_->additional_cmds) {
-      if (!cmd.second.canConvertTo< int32_t >()) {
-        // print an warning ??
-        continue;
-      }
-      const int32_t value(cmd.second.to< int32_t >());
       const char *log(NULL);
-      if (!data_->dxl_wb->itemWrite(data_->id, cmd.first.c_str(), value, &log)) {
+      if (!data_->dxl_wb->itemWrite(data_->id, cmd.first.c_str(), cmd.second, &log)) {
         ROS_ERROR_STREAM("OperatingModeBase::writeAdditionalCommands(): Failed to set '"
                          << cmd.first << "' of '" << data_->name
-                         << "' (id: " << static_cast< int >(data_->id) << " to " << value << ": "
-                         << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
+                         << "' (id: " << static_cast< int >(data_->id) << " to " << cmd.second
+                         << ": " << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
         return false;
       }
     }

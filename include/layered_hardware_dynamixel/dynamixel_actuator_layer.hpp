@@ -10,7 +10,7 @@
 #include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/controller_info.h>
 #include <hardware_interface/robot_hw.h>
-#include <hardware_interface_extensions/byte_array_interface.hpp>
+#include <hardware_interface_extensions/integer_interface.hpp>
 #include <layered_hardware/layer_base.hpp>
 #include <layered_hardware_dynamixel/common_namespaces.hpp>
 #include <layered_hardware_dynamixel/controller_set.hpp>
@@ -36,8 +36,8 @@ public:
     makeRegistered< hi::PositionActuatorInterface >(hw);
     makeRegistered< hi::VelocityActuatorInterface >(hw);
     makeRegistered< hi::EffortActuatorInterface >(hw);
-    makeRegistered< hie::ByteArrayStateInterface >(hw);
-    makeRegistered< hie::ByteArrayCommandInterface >(hw);
+    makeRegistered< hie::Int32StateInterface >(hw);
+    makeRegistered< hie::Int32Interface >(hw);
 
     // open USB serial device
     if (!dxl_wb_.init(param< std::string >(param_nh, "serial_interface", "/dev/ttyUSB0").c_str(),
