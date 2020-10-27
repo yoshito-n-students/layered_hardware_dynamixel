@@ -1,12 +1,13 @@
 #ifndef LAYERED_HARDWARE_DYNAMIXEL_DYNAMIXEL_ACTUATOR_DATA_HPP
 #define LAYERED_HARDWARE_DYNAMIXEL_DYNAMIXEL_ACTUATOR_DATA_HPP
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
 
 #include <dynamixel_workbench_toolbox/dynamixel_workbench.h>
-#include <hardware_interface_extensions/byte_array_interface.hpp>
+#include <hardware_interface_extensions/integer_interface.hpp>
 #include <layered_hardware_dynamixel/common_namespaces.hpp>
 
 #include <boost/cstdint.hpp>
@@ -24,12 +25,8 @@ struct DynamixelActuatorData {
         eff(0.), pos_cmd(0.), vel_cmd(0.), eff_cmd(0.) {
     // TODO: this sorts names and breaks the original order.
     //       use std::vector< std::pair<> > instead of std::map<> .
-    BOOST_FOREACH (const std::string &name, additional_state_names) {
-      additional_states[name] = hie::ByteArray();
-    }
-    BOOST_FOREACH (const std::string &name, additional_cmd_names) {
-      additional_cmds[name] = hie::ByteArray();
-    }
+    BOOST_FOREACH (const std::string &name, additional_state_names) { additional_states[name] = 0; }
+    BOOST_FOREACH (const std::string &name, additional_cmd_names) { additional_cmds[name] = 0; }
   }
 
   // handles
@@ -42,11 +39,11 @@ struct DynamixelActuatorData {
 
   // states
   double pos, vel, eff;
-  std::map< std::string, hie::ByteArray > additional_states;
+  std::map< std::string, std::int32_t > additional_states;
 
   // commands
   double pos_cmd, vel_cmd, eff_cmd;
-  std::map< std::string, hie::ByteArray > additional_cmds;
+  std::map< std::string, std::int32_t > additional_cmds;
 };
 
 typedef boost::shared_ptr< DynamixelActuatorData > DynamixelActuatorDataPtr;
