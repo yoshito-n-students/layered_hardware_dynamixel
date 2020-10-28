@@ -85,6 +85,18 @@ protected:
   // read functions for chiled classes
   //
 
+  bool readItem(const std::string &item, int32_t *value) {
+    const char *log(NULL);
+    if (!data_->dxl_wb->itemRead(data_->id, item.c_str(), value, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::readItem(): Failed to read control table item '"
+                       << item << "' of '" << data_->name
+                       << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::itemRead()"));
+      return false;
+    }
+    return true;
+  }
+
   bool readPosition() {
     float rad;
     const char *log(NULL);
@@ -100,13 +112,9 @@ protected:
 
   bool readVelocity() {
     int32_t value;
-    const char *log(NULL);
     // As of dynamixel_workbench_toolbox v2.0.0,
     // DynamixelWorkbench::getVelocity() reads a wrong item ...
-    if (!data_->dxl_wb->itemRead(data_->id, "Present_Velocity", &value, &log)) {
-      ROS_ERROR_STREAM("OperatingModeBase::readVelocity(): Failed to read velocity from '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id)
-                       << "): " << (log ? log : "No log from DynamixelWorkbench::itemRead()"));
+    if (!readItem("Present_Velocity", &value)) {
       return false;
     }
     data_->vel = data_->dxl_wb->convertValue2Velocity(data_->id, value);
@@ -115,11 +123,7 @@ protected:
 
   bool readEffort() {
     int32_t value;
-    const char *log(NULL);
-    if (!data_->dxl_wb->itemRead(data_->id, "Present_Current", &value, &log)) {
-      ROS_ERROR_STREAM("OperatingModeBase::readEffort(): Failed to read current from '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id)
-                       << "): " << (log ? log : "No log from DynamixelWorkbench::itemRead()"));
+    if (!readItem("Present_Current", &value)) {
       return false;
     }
     // TODO: use new API once supported
@@ -132,12 +136,7 @@ protected:
     typedef std::map< std::string, std::int32_t > StateMap;
     bool result(true);
     BOOST_FOREACH (StateMap::value_type &state, data_->additional_states) {
-      const char *log(NULL);
-      if (!data_->dxl_wb->itemRead(data_->id, state.first.c_str(), &state.second, &log)) {
-        ROS_ERROR_STREAM("OperatingModeBase::readAdditionalStates(): Failed to read '"
-                         << state.first << "' from '" << data_->name
-                         << "' (id: " << static_cast< int >(data_->id)
-                         << "): " << (log ? log : "No log from DynamixelWorkbench::itemRead()"));
+      if (!readItem(state.first, &state.second)) {
         result = false;
       }
     }
@@ -152,6 +151,17 @@ protected:
     const bool eff_result(readEffort());
     const bool additional_result(readAdditionalStates());
     return pos_result && vel_result && eff_result && additional_result;
+  }
+
+  bool initAdditionalCommands() {
+    typedef std::map< std::string, std::int32_t > CommandMap;
+    bool result(true);
+    BOOST_FOREACH (CommandMap::value_type &cmd, data_->additional_cmds) {
+      if (!readItem(cmd.first, &cmd.second)) {
+        result = false;
+      }
+    }
+    return result;
   }
 
   //
@@ -209,16 +219,22 @@ protected:
     return true;
   }
 
+  bool writeItem(const std::string &item, const int32_t value) {
+    const char *log(NULL);
+    if (!data_->dxl_wb->itemWrite(data_->id, item.c_str(), value, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::writeItem(): Failed to set control table item '"
+                       << item << "' of '" << data_->name
+                       << "' (id: " << static_cast< int >(data_->id) << " to " << value << ": "
+                       << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
+      return false;
+    }
+    return true;
+  }
+
   bool writeItems(const std::map< std::string, int > &item_map) {
     typedef std::map< std::string, int > ItemMap;
-    BOOST_FOREACH (const ItemMap::value_type item, item_map) {
-      const int32_t value(static_cast< int32_t >(item.second));
-      const char *log(NULL);
-      if (!data_->dxl_wb->itemWrite(data_->id, item.first.c_str(), value, &log)) {
-        ROS_ERROR_STREAM("OperatingModeBase::writeItems(): Failed to set control table item '"
-                         << item.first << "' of '" << data_->name
-                         << "' (id: " << static_cast< int >(data_->id) << " to " << value << ": "
-                         << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
+    BOOST_FOREACH (const ItemMap::value_type &item, item_map) {
+      if (!writeItem(item.first, item.second)) {
         return false;
       }
     }
@@ -254,16 +270,7 @@ protected:
   bool writeProfileVelocity() {
     const float cmd(static_cast< float >(std::abs(data_->vel_cmd)));
     const int32_t cmd_value(data_->dxl_wb->convertVelocity2Value(data_->id, cmd));
-    const char *log(NULL);
-    if (!data_->dxl_wb->itemWrite(data_->id, "Profile_Velocity", cmd_value, &log)) {
-      ROS_ERROR_STREAM(
-          "OperatingModeBase::writeProfileVelocity(): Failed to set profile velocity of '"
-          << data_->name << "' (id: " << static_cast< int >(data_->id) << ") to " << cmd
-          << " (value: " << cmd_value
-          << "): " << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
-      return false;
-    }
-    return true;
+    return writeItem("Profile_Velocity", cmd_value);
   }
 
   bool writeEffortCommand() {
@@ -271,26 +278,13 @@ protected:
     // TODO: use new API once supported
     const int16_t cmd_value(data_->dxl_wb->convertCurrent2Value(
         /* data_->id, */ cmd));
-    const char *log(NULL);
-    if (!data_->dxl_wb->itemWrite(data_->id, "Goal_Current", cmd_value, &log)) {
-      ROS_ERROR_STREAM("OperatingModeBase::writeEffortCommand(): Failed to set goal current of '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ") to "
-                       << cmd << " (value: " << cmd_value
-                       << "): " << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
-      return false;
-    }
-    return true;
+    return writeItem("Goal_Current", cmd_value);
   }
 
   bool writeAdditionalCommands() {
     typedef std::map< std::string, std::int32_t > CommandMap;
     BOOST_FOREACH (const CommandMap::value_type &cmd, data_->additional_cmds) {
-      const char *log(NULL);
-      if (!data_->dxl_wb->itemWrite(data_->id, cmd.first.c_str(), cmd.second, &log)) {
-        ROS_ERROR_STREAM("OperatingModeBase::writeAdditionalCommands(): Failed to set '"
-                         << cmd.first << "' of '" << data_->name
-                         << "' (id: " << static_cast< int >(data_->id) << " to " << cmd.second
-                         << ": " << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
+      if (!writeItem(cmd.first, cmd.second)) {
         return false;
       }
     }
