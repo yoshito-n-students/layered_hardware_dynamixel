@@ -2,6 +2,7 @@
 #define LAYERED_HARDWARE_DYNAMIXEL_VELOCITY_MODE_HPP
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <string>
@@ -16,7 +17,8 @@ namespace layered_hardware_dynamixel {
 
 class VelocityMode : public OperatingModeBase {
 public:
-  VelocityMode(const DynamixelActuatorDataPtr &data, const std::map< std::string, int > &item_map)
+  VelocityMode(const DynamixelActuatorDataPtr &data,
+               const std::map< std::string, std::int32_t > &item_map)
       : OperatingModeBase("velocity", data), item_map_(item_map) {}
 
   virtual void starting() {
@@ -42,7 +44,7 @@ public:
   virtual void stopping() { torqueOff(); }
 
 private:
-  const std::map< std::string, int > item_map_;
+  const std::map< std::string, std::int32_t > item_map_;
   double prev_vel_cmd_;
 };
 } // namespace layered_hardware_dynamixel

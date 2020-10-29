@@ -2,6 +2,7 @@
 #define LAYERED_HARDWARE_DYNAMIXEL_CURRENT_BASED_POSITION_MODE_HPP
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <string>
@@ -19,7 +20,7 @@ namespace layered_hardware_dynamixel {
 class CurrentBasedPositionMode : public OperatingModeBase {
 public:
   CurrentBasedPositionMode(const DynamixelActuatorDataPtr &data,
-                           const std::map< std::string, int > &item_map)
+                           const std::map< std::string, std::int32_t > &item_map)
       : OperatingModeBase("current_based_position", data), item_map_(item_map) {}
 
   virtual void starting() {
@@ -90,7 +91,7 @@ public:
   virtual void stopping() { torqueOff(); }
 
 private:
-  const std::map< std::string, int > item_map_;
+  const std::map< std::string, std::int32_t > item_map_;
   double prev_pos_cmd_, prev_vel_cmd_, prev_eff_cmd_;
   boost::optional< double > cached_pos_;
 };
