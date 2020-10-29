@@ -288,8 +288,6 @@ protected:
   // utility
   //
 
-  static bool isNotNaN(const double a) { return !std::isnan(a); }
-
   static bool areNotEqual(const double a, const double b) {
     // does !(|a - b| < EPS) instead of (|a - b| >= EPS) to return True when a and/or b is NaN
     return !(std::abs(a - b) < std::numeric_limits< double >::epsilon());

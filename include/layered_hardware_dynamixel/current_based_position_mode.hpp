@@ -1,6 +1,7 @@
 #ifndef LAYERED_HARDWARE_DYNAMIXEL_CURRENT_BASED_POSITION_MODE_HPP
 #define LAYERED_HARDWARE_DYNAMIXEL_CURRENT_BASED_POSITION_MODE_HPP
 
+#include <cmath>
 #include <limits>
 #include <map>
 #include <string>
@@ -46,14 +47,16 @@ public:
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
     // write profile velocity if updated
-    const bool do_write_vel(isNotNaN(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_));
+    const bool do_write_vel(!std::isnan(data_->vel_cmd) &&
+                            areNotEqual(data_->vel_cmd, prev_vel_cmd_));
     if (do_write_vel) {
       writeProfileVelocity();
       prev_vel_cmd_ = data_->vel_cmd;
     }
 
     // write effort limit if updated
-    const bool do_write_eff(isNotNaN(data_->eff_cmd) && areNotEqual(data_->eff_cmd, prev_eff_cmd_));
+    const bool do_write_eff(!std::isnan(data_->eff_cmd) &&
+                            areNotEqual(data_->eff_cmd, prev_eff_cmd_));
     if (do_write_eff) {
       writeEffortCommand();
       prev_eff_cmd_ = data_->eff_cmd;
@@ -62,7 +65,7 @@ public:
     // if the profile velocity is 0, the user would want the actuator
     // to stop at the present position but 0 actually means unlimited.
     // to solve this mismatch, freeze the position command on that case.
-    const bool do_freeze_pos(isNotNaN(data_->vel_cmd) &&
+    const bool do_freeze_pos(!std::isnan(data_->vel_cmd) &&
                              data_->dxl_wb->convertVelocity2Value(data_->id, data_->vel_cmd) == 0);
     if (do_freeze_pos) {
       if (!cached_pos_) {
@@ -76,7 +79,7 @@ public:
     // write goal position if the goal pos, profile velocity or effort limit have been updated
     // to make the change affect
     const bool do_write_pos(
-        isNotNaN(data_->pos_cmd) &&
+        !std::isnan(data_->pos_cmd) &&
         (do_write_vel || do_write_eff || areNotEqual(data_->pos_cmd, prev_pos_cmd_)));
     if (do_write_pos) {
       writePositionCommand();
