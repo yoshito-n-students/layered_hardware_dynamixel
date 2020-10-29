@@ -36,6 +36,8 @@ public:
     data_->vel_cmd = 0.;
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
 
+    initAdditionalCommands();
+
     cached_pos_ = boost::none;
   }
 
@@ -75,6 +77,9 @@ public:
       writePositionCommand();
       prev_pos_cmd_ = data_->pos_cmd;
     }
+
+    // TODO: write only when commands are updated
+    writeAdditionalCommands();
   }
 
   virtual void stopping() { torqueOff(); }
