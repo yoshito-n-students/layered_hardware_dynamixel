@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -30,8 +31,6 @@
 #include <ros/param.h>
 #include <ros/time.h>
 
-#include <boost/cstdint.hpp>
-#include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -63,7 +62,7 @@ public:
     }
 
     // find dynamixel actuator by id
-    uint16_t model_number;
+    std::uint16_t model_number;
     if (!dxl_wb->ping(id, &model_number)) {
       ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to ping the actuator '"
                        << name << "' (id: " << static_cast< int >(id) << ")");
@@ -101,14 +100,13 @@ public:
     }
 
     // register additional states & commands to corresponding hardware interfaces
-    typedef std::map< std::string, std::int32_t > Int32Map;
-    BOOST_FOREACH (Int32Map::value_type &state, data_->additional_states) {
+    for (std::map< std::string, std::int32_t >::value_type &state : data_->additional_states) {
       if (!registerActuatorTo< hie::Int32StateInterface >(
               hw, hie::Int32StateHandle(data_->name + "/" + state.first, &state.second))) {
         return false;
       }
     }
-    BOOST_FOREACH (Int32Map::value_type &cmd, data_->additional_cmds) {
+    for (std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
       if (!registerActuatorTo< hie::Int32Interface >(
               hw, hie::Int32Handle(data_->name + "/" + cmd.first, &cmd.second, &cmd.second))) {
         return false;
@@ -116,14 +114,13 @@ public:
     }
 
     // make operating mode map from ros-controller name to dynamixel's operating mode
-    typedef std::map< std::string, std::string > ModeNameMap;
-    ModeNameMap mode_name_map;
+    std::map< std::string, std::string > mode_name_map;
     if (!param_nh.getParam("operating_mode_map", mode_name_map)) {
       ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to get param '"
                        << param_nh.resolveName("operating_mode_map") << "'");
       return false;
     }
-    BOOST_FOREACH (const ModeNameMap::value_type &mode_name, mode_name_map) {
+    for (const std::map< std::string, std::string >::value_type &mode_name : mode_name_map) {
       //
       const std::vector< std::string > controller_names(resolveControllerNames(mode_name.first));
       if (controller_names.empty()) {
@@ -152,8 +149,8 @@ public:
   bool prepareSwitch(const ControllerSet &controllers) {
     // check if switching is possible by counting number of operating modes after switching
     std::size_t n_modes(0);
-    typedef std::map< std::vector< std::string >, OperatingModePtr > ModeMap;
-    BOOST_FOREACH (const ModeMap::value_type &mode, mode_map_) {
+    for (const std::map< std::vector< std::string >, OperatingModePtr >::value_type &mode :
+         mode_map_) {
       if (controllers.contains(mode.first)) {
         ++n_modes;
         if (n_modes > 1) {
@@ -167,8 +164,8 @@ public:
   void doSwitch(const ControllerSet &controllers) {
     // find the next mode to run by the list of running controllers after switching
     OperatingModePtr next_mode;
-    typedef std::map< std::vector< std::string >, OperatingModePtr > ModeMap;
-    BOOST_FOREACH (const ModeMap::value_type &mode, mode_map_) {
+    for (const std::map< std::vector< std::string >, OperatingModePtr >::value_type &mode :
+         mode_map_) {
       if (controllers.contains(mode.first)) {
         next_mode = mode.second;
         // no more iterations are required because prepareSwitch() ensures
@@ -247,19 +244,19 @@ private:
   OperatingModePtr makeOperatingMode(const std::string &mode_str,
                                      const std::map< std::string, int > &item_map) {
     if (mode_str == "clear_multi_turn") {
-      return boost::make_shared< ClearMultiTurnMode >(data_);
+      return std::make_shared< ClearMultiTurnMode >(data_);
     } else if (mode_str == "current") {
-      return boost::make_shared< CurrentMode >(data_, item_map);
+      return std::make_shared< CurrentMode >(data_, item_map);
     } else if (mode_str == "current_based_position") {
-      return boost::make_shared< CurrentBasedPositionMode >(data_, item_map);
+      return std::make_shared< CurrentBasedPositionMode >(data_, item_map);
     } else if (mode_str == "extended_position") {
-      return boost::make_shared< ExtendedPositionMode >(data_, item_map);
+      return std::make_shared< ExtendedPositionMode >(data_, item_map);
     } else if (mode_str == "reboot") {
-      return boost::make_shared< RebootMode >(data_);
+      return std::make_shared< RebootMode >(data_);
     } else if (mode_str == "torque_disable") {
-      return boost::make_shared< TorqueDisableMode >(data_);
+      return std::make_shared< TorqueDisableMode >(data_);
     } else if (mode_str == "velocity") {
-      return boost::make_shared< VelocityMode >(data_, item_map);
+      return std::make_shared< VelocityMode >(data_, item_map);
     }
     ROS_ERROR_STREAM("DynamixelActuator::makeOperatingMode(): Unknown operating mode name '"
                      << mode_str << " for the actuator '" << data_->name
@@ -274,8 +271,8 @@ private:
   OperatingModePtr present_mode_;
 };
 
-typedef boost::shared_ptr< DynamixelActuator > DynamixelActuatorPtr;
-typedef boost::shared_ptr< const DynamixelActuator > DynamixelActuatorConstPtr;
+typedef std::shared_ptr< DynamixelActuator > DynamixelActuatorPtr;
+typedef std::shared_ptr< const DynamixelActuator > DynamixelActuatorConstPtr;
 } // namespace layered_hardware_dynamixel
 
 #endif
