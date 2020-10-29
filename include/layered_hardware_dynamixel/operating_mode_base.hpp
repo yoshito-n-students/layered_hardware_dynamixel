@@ -5,17 +5,13 @@
 #include <cstdint>
 #include <limits>
 #include <map>
+#include <memory>
 #include <string>
 
 #include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
 #include <ros/console.h>
 #include <ros/duration.h>
 #include <ros/time.h>
-
-#include <boost/cstdint.hpp>
-#include <boost/foreach.hpp>
-#include <boost/math/special_functions/fpclassify.hpp> // for isnan()
-#include <boost/shared_ptr.hpp>
 
 namespace layered_hardware_dynamixel {
 
@@ -111,7 +107,7 @@ protected:
   }
 
   bool readVelocity() {
-    int32_t value;
+    std::int32_t value;
     // As of dynamixel_workbench_toolbox v2.0.0,
     // DynamixelWorkbench::getVelocity() reads a wrong item ...
     if (!readItem("Present_Velocity", &value)) {
@@ -122,7 +118,7 @@ protected:
   }
 
   bool readEffort() {
-    int32_t value;
+    std::int32_t value;
     if (!readItem("Present_Current", &value)) {
       return false;
     }
@@ -133,9 +129,8 @@ protected:
   }
 
   bool readAdditionalStates() {
-    typedef std::map< std::string, std::int32_t > StateMap;
     bool result(true);
-    BOOST_FOREACH (StateMap::value_type &state, data_->additional_states) {
+    for (std::map< std::string, std::int32_t >::value_type &state : data_->additional_states) {
       if (!readItem(state.first, &state.second)) {
         result = false;
       }
@@ -154,9 +149,8 @@ protected:
   }
 
   bool initAdditionalCommands() {
-    typedef std::map< std::string, std::int32_t > CommandMap;
     bool result(true);
-    BOOST_FOREACH (CommandMap::value_type &cmd, data_->additional_cmds) {
+    for (std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
       if (!readItem(cmd.first, &cmd.second)) {
         result = false;
       }
@@ -168,7 +162,8 @@ protected:
   // write functions for child classes
   //
 
-  bool enableOperatingMode(bool (DynamixelWorkbench::*const set_func)(uint8_t, const char **)) {
+  bool enableOperatingMode(bool (DynamixelWorkbench::*const set_func)(std::uint8_t,
+                                                                      const char **)) {
     const char *log;
     // disable torque to make the actuator ready to change operating modes
     log = NULL;
@@ -219,7 +214,7 @@ protected:
     return true;
   }
 
-  bool writeItem(const std::string &item, const int32_t value) {
+  bool writeItem(const std::string &item, const std::int32_t value) {
     const char *log(NULL);
     if (!data_->dxl_wb->itemWrite(data_->id, item.c_str(), value, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::writeItem(): Failed to set control table item '"
@@ -232,8 +227,7 @@ protected:
   }
 
   bool writeItems(const std::map< std::string, int > &item_map) {
-    typedef std::map< std::string, int > ItemMap;
-    BOOST_FOREACH (const ItemMap::value_type &item, item_map) {
+    for (const std::map< std::string, int >::value_type &item : item_map) {
       if (!writeItem(item.first, item.second)) {
         return false;
       }
@@ -269,21 +263,20 @@ protected:
 
   bool writeProfileVelocity() {
     const float cmd(static_cast< float >(std::abs(data_->vel_cmd)));
-    const int32_t cmd_value(data_->dxl_wb->convertVelocity2Value(data_->id, cmd));
+    const std::int32_t cmd_value(data_->dxl_wb->convertVelocity2Value(data_->id, cmd));
     return writeItem("Profile_Velocity", cmd_value);
   }
 
   bool writeEffortCommand() {
     const float cmd(data_->eff_cmd / data_->torque_constant * 1000.0);
     // TODO: use new API once supported
-    const int16_t cmd_value(data_->dxl_wb->convertCurrent2Value(
+    const std::int16_t cmd_value(data_->dxl_wb->convertCurrent2Value(
         /* data_->id, */ cmd));
     return writeItem("Goal_Current", cmd_value);
   }
 
   bool writeAdditionalCommands() {
-    typedef std::map< std::string, std::int32_t > CommandMap;
-    BOOST_FOREACH (const CommandMap::value_type &cmd, data_->additional_cmds) {
+    for (const std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
       if (!writeItem(cmd.first, cmd.second)) {
         return false;
       }
@@ -295,7 +288,7 @@ protected:
   // utility
   //
 
-  static bool isNotNaN(const double a) { return !boost::math::isnan(a); }
+  static bool isNotNaN(const double a) { return !std::isnan(a); }
 
   static bool areNotEqual(const double a, const double b) {
     // does !(|a - b| < EPS) instead of (|a - b| >= EPS) to return True when a and/or b is NaN
@@ -307,8 +300,8 @@ protected:
   const DynamixelActuatorDataPtr data_;
 };
 
-typedef boost::shared_ptr< OperatingModeBase > OperatingModePtr;
-typedef boost::shared_ptr< const OperatingModeBase > OperatingModeConstPtr;
+typedef std::shared_ptr< OperatingModeBase > OperatingModePtr;
+typedef std::shared_ptr< const OperatingModeBase > OperatingModeConstPtr;
 } // namespace layered_hardware_dynamixel
 
 #endif

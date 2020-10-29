@@ -21,8 +21,6 @@
 #include <ros/time.h>
 #include <xmlrpcpp/XmlRpcValue.h>
 
-#include <boost/foreach.hpp>
-
 namespace layered_hardware_dynamixel {
 
 class DynamixelActuatorLayer : public lh::LayerBase {
@@ -60,15 +58,14 @@ public:
 
     // init actuators with param "actuators/<actuator_name>"
     // (could not use BOOST_FOREACH here to avoid a bug in the library in Kinetic)
-    for (XmlRpc::XmlRpcValue::iterator ator_param = ators_param.begin();
-         ator_param != ators_param.end(); ++ator_param) {
+    for (const XmlRpc::XmlRpcValue::ValueStruct::value_type &ator_param : ators_param) {
       DynamixelActuatorPtr ator(new DynamixelActuator());
-      ros::NodeHandle ator_param_nh(param_nh, ros::names::append("actuators", ator_param->first));
-      if (!ator->init(ator_param->first, &dxl_wb_, hw, ator_param_nh)) {
+      ros::NodeHandle ator_param_nh(param_nh, ros::names::append("actuators", ator_param.first));
+      if (!ator->init(ator_param.first, &dxl_wb_, hw, ator_param_nh)) {
         return false;
       }
       ROS_INFO_STREAM("DynamixelActuatorLayer::init(): Initialized the actuator '"
-                      << ator_param->first << "'");
+                      << ator_param.first << "'");
       actuators_.push_back(ator);
     }
 
@@ -78,7 +75,7 @@ public:
   virtual bool prepareSwitch(const std::list< hi::ControllerInfo > &start_list,
                              const std::list< hi::ControllerInfo > &stop_list) {
     // ask to all actuators if controller switching is possible
-    BOOST_FOREACH (const DynamixelActuatorPtr &ator, actuators_) {
+    for (const DynamixelActuatorPtr &ator : actuators_) {
       if (!ator->prepareSwitch(start_list, stop_list)) {
         return false;
       }
@@ -89,19 +86,23 @@ public:
   virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
                         const std::list< hi::ControllerInfo > &stop_list) {
     // notify controller switching to all actuators
-    BOOST_FOREACH (const DynamixelActuatorPtr &ator, actuators_) {
+    for (const DynamixelActuatorPtr &ator : actuators_) {
       ator->doSwitch(start_list, stop_list);
     }
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) {
     // read from all actuators
-    BOOST_FOREACH (const DynamixelActuatorPtr &ator, actuators_) { ator->read(time, period); }
+    for (const DynamixelActuatorPtr &ator : actuators_) {
+      ator->read(time, period);
+    }
   }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
     // write to all actuators
-    BOOST_FOREACH (const DynamixelActuatorPtr &ator, actuators_) { ator->write(time, period); }
+    for (const DynamixelActuatorPtr &ator : actuators_) {
+      ator->write(time, period);
+    }
   }
 
 private:
