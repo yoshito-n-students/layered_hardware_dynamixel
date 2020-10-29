@@ -31,9 +31,6 @@
 #include <ros/param.h>
 #include <ros/time.h>
 
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
-
 namespace layered_hardware_dynamixel {
 
 class DynamixelActuator {
@@ -131,8 +128,8 @@ public:
         return false;
       }
       //
-      std::map< std::string, int > item_map;
-      param_nh.getParam(ros::names::append("item_map", mode_name.second), item_map);
+      std::map< std::string, std::int32_t > item_map;
+      getInt32MapParam(param_nh, ros::names::append("item_map", mode_name.second), item_map);
       const OperatingModePtr mode(makeOperatingMode(mode_name.second, item_map));
       if (!mode) {
         ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to make operating mode '"
@@ -241,8 +238,22 @@ private:
     return std::vector< std::string >();
   }
 
+  static bool getInt32MapParam(const ros::NodeHandle &nh, const std::string &key,
+                               std::map< std::string, std::int32_t > &int32_map) {
+    std::map< std::string, int > int_map;
+    if (!nh.getParam(key, int_map)) {
+      return false;
+    }
+
+    int32_map.clear();
+    for (const std::map< std::string, int >::value_type &int_val : int_map) {
+      int32_map[int_val.first] = static_cast< std::int32_t >(int_val.second);
+    }
+    return true;
+  }
+
   OperatingModePtr makeOperatingMode(const std::string &mode_str,
-                                     const std::map< std::string, int > &item_map) {
+                                     const std::map< std::string, std::int32_t > &item_map) {
     if (mode_str == "clear_multi_turn") {
       return std::make_shared< ClearMultiTurnMode >(data_);
     } else if (mode_str == "current") {

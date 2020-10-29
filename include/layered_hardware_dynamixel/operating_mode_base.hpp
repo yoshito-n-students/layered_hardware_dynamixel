@@ -226,8 +226,8 @@ protected:
     return true;
   }
 
-  bool writeItems(const std::map< std::string, int > &item_map) {
-    for (const std::map< std::string, int >::value_type &item : item_map) {
+  bool writeItems(const std::map< std::string, std::int32_t > &item_map) {
+    for (const std::map< std::string, std::int32_t >::value_type &item : item_map) {
       if (!writeItem(item.first, item.second)) {
         return false;
       }
