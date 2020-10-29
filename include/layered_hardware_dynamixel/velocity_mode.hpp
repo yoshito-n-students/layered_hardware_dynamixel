@@ -1,6 +1,7 @@
 #ifndef LAYERED_HARDWARE_DYNAMIXEL_VELOCITY_MODE_HPP
 #define LAYERED_HARDWARE_DYNAMIXEL_VELOCITY_MODE_HPP
 
+#include <cmath>
 #include <limits>
 #include <map>
 #include <string>
@@ -32,7 +33,7 @@ public:
   virtual void read(const ros::Time &time, const ros::Duration &period) { readAllStates(); }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
-    if (isNotNaN(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
+    if (!std::isnan(data_->vel_cmd) && areNotEqual(data_->vel_cmd, prev_vel_cmd_)) {
       writeVelocityCommand();
       prev_vel_cmd_ = data_->vel_cmd;
     }

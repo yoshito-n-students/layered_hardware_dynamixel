@@ -1,6 +1,7 @@
 #ifndef LAYERED_HARDWARE_DYNAMIXEL_CURRENT_MODE_HPP
 #define LAYERED_HARDWARE_DYNAMIXEL_CURRNET_MODE_HPP
 
+#include <cmath>
 #include <limits>
 #include <map>
 #include <string>
@@ -30,7 +31,7 @@ public:
   virtual void read(const ros::Time &time, const ros::Duration &period) { readAllStates(); }
 
   virtual void write(const ros::Time &time, const ros::Duration &period) {
-    if (isNotNaN(data_->eff_cmd) && areNotEqual(data_->eff_cmd, prev_eff_cmd_)) {
+    if (!std::isnan(data_->eff_cmd) && areNotEqual(data_->eff_cmd, prev_eff_cmd_)) {
       writeEffortCommand();
       prev_eff_cmd_ = data_->eff_cmd;
     }
