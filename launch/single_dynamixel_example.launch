@@ -31,6 +31,8 @@
                         additional_states:
                             - Present_Input_Voltage
                             - Present_Temperature
+                        additional_commands:
+                            - LED
         </rosparam>
     </node>
 
@@ -42,6 +44,9 @@
         additional_state_controller:
             type: integer_controllers/Int32StateController
             interval: 1.0
+        led_controller:
+            type: integer_controllers/Int32Controller
+            handle: dynamixel_actuator/LED
         posvel_controller:
             type: posvel_controllers/JointPosVelController
             joint: dynamixel_joint
@@ -60,7 +65,7 @@
 
     <!-- Controller starter -->
     <node name="controller_starter" pkg="controller_manager" type="controller_manager" output="screen"
-          args="spawn joint_state_controller additional_state_controller posvel_controller" />
+          args="spawn joint_state_controller additional_state_controller led_controller posvel_controller" />
 
     <node name="controller_loader" pkg="controller_manager" type="controller_manager" output="screen"
           args="load posveleff_controller velocity_controller effort_controller reboot_controller" />
