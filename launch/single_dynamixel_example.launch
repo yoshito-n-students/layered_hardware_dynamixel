@@ -31,6 +31,8 @@
                         additional_states:
                             - Present_Input_Voltage
                             - Present_Temperature
+                        additional_commands:
+                            - LED
         </rosparam>
     </node>
 
@@ -42,6 +44,9 @@
         additional_state_controller:
             type: integer_controllers/Int32StateController
             interval: 1.0
+        led_controller:
+            type: integer_controllers/Int32Controller
+            handle: dynamixel_actuator/LED
         posvel_controller:
             type: posvel_controllers/JointPosVelController
             joint: dynamixel_joint
