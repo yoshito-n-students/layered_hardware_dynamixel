@@ -93,6 +93,16 @@ protected:
     return true;
   }
 
+  bool readItems(std::map< std::string, std::int32_t > *const items) {
+    bool result(true);
+    for (std::map< std::string, std::int32_t >::value_type &item : *items) {
+      if (!readItem(item.first, &item.second)) {
+        result = false;
+      }
+    }
+    return result;
+  }
+
   bool readPosition() {
     float rad;
     const char *log(NULL);
@@ -146,16 +156,6 @@ protected:
     const bool eff_result(readEffort());
     const bool additional_result(readAdditionalStates());
     return pos_result && vel_result && eff_result && additional_result;
-  }
-
-  bool initAdditionalCommands() {
-    bool result(true);
-    for (std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
-      if (!readItem(cmd.first, &cmd.second)) {
-        result = false;
-      }
-    }
-    return result;
   }
 
   //
@@ -273,15 +273,6 @@ protected:
     const std::int16_t cmd_value(data_->dxl_wb->convertCurrent2Value(
         /* data_->id, */ cmd));
     return writeItem("Goal_Current", cmd_value);
-  }
-
-  bool writeAdditionalCommands() {
-    for (const std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
-      if (!writeItem(cmd.first, cmd.second)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   //
