@@ -36,7 +36,8 @@ public:
     data_->vel_cmd = 0.;
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
 
-    initAdditionalCommands();
+    readItems(&data_->additional_cmds);
+    prev_additional_cmds_ = data_->additional_cmds;
 
     cached_pos_ = boost::none;
   }
@@ -78,8 +79,15 @@ public:
       prev_pos_cmd_ = data_->pos_cmd;
     }
 
-    // TODO: write only when commands are updated
-    writeAdditionalCommands();
+    // write additional commands only when commands are updated
+    for (const std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
+      std::int32_t &prev_cmd(prev_additional_cmds_[cmd.first]);
+      const bool do_write_cmd(cmd.second != prev_cmd);
+      if (do_write_cmd) {
+        writeItem(cmd.first, cmd.second);
+        prev_cmd = cmd.second;
+      }
+    }
   }
 
   virtual void stopping() { torqueOff(); }
@@ -87,6 +95,7 @@ public:
 private:
   const std::map< std::string, std::int32_t > item_map_;
   double prev_pos_cmd_, prev_vel_cmd_;
+  std::map< std::string, std::int32_t > prev_additional_cmds_;
   boost::optional< double > cached_pos_;
 };
 } // namespace layered_hardware_dynamixel
