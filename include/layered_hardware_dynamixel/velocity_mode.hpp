@@ -30,6 +30,9 @@ public:
     // set reasonable initial command
     data_->vel_cmd = 0.;
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
+
+    readItems(&data_->additional_cmds);
+    prev_additional_cmds_ = data_->additional_cmds;
   }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) { readAllStates(); }
@@ -39,6 +42,15 @@ public:
       writeVelocityCommand();
       prev_vel_cmd_ = data_->vel_cmd;
     }
+
+    // write additional commands only when commands are updated
+    for (const std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
+      std::int32_t &prev_cmd(prev_additional_cmds_[cmd.first]);
+      if (cmd.second != prev_cmd) {
+        writeItem(cmd.first, cmd.second);
+        prev_cmd = cmd.second;
+      }
+    }
   }
 
   virtual void stopping() { torqueOff(); }
@@ -46,6 +58,7 @@ public:
 private:
   const std::map< std::string, std::int32_t > item_map_;
   double prev_vel_cmd_;
+  std::map< std::string, std::int32_t > prev_additional_cmds_;
 };
 } // namespace layered_hardware_dynamixel
 
