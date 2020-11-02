@@ -253,7 +253,7 @@ private:
   }
 
   OperatingModePtr makeOperatingMode(const std::string &mode_str,
-                                     const std::map< std::string, std::int32_t > &item_map) {
+                                     const std::map< std::string, std::int32_t > &item_map) const {
     if (mode_str == "clear_multi_turn") {
       return std::make_shared< ClearMultiTurnMode >(data_);
     } else if (mode_str == "current") {
