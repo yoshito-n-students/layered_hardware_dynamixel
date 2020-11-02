@@ -23,6 +23,13 @@ public:
                        const std::map< std::string, std::int32_t > &item_map)
       : OperatingModeBase("extended_position", data), item_map_(item_map) {}
 
+  virtual void prepareStart() override {
+    // fetch initial value of commands here
+    // to make them valid before executing a controller's starting()
+    readAllStates();
+    readItems(&data_->additional_cmds);
+  }
+  
   virtual void starting() override {
     // switch to extended-position mode & torque enable
     enableOperatingMode(&DynamixelWorkbench::setExtendedPositionControlMode);
@@ -30,13 +37,10 @@ public:
     writeItems(item_map_);
 
     // use the present position as the initial command
-    readAllStates();
     data_->pos_cmd = data_->pos;
     prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
     data_->vel_cmd = 0.;
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
-
-    readItems(&data_->additional_cmds);
     prev_additional_cmds_ = data_->additional_cmds;
 
     cached_pos_ = boost::none;

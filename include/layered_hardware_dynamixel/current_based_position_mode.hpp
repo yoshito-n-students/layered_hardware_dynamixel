@@ -23,6 +23,13 @@ public:
                            const std::map< std::string, std::int32_t > &item_map)
       : OperatingModeBase("current_based_position", data), item_map_(item_map) {}
 
+  virtual void prepareStart() override {
+    // fetch initial value of commands here
+    // to make them valid before executing a controller's starting()
+    readAllStates();
+    readItems(&data_->additional_cmds);
+  }
+  
   virtual void starting() override {
     // switch to current-based position mode
     enableOperatingMode(&DynamixelWorkbench::setCurrentBasedPositionControlMode);
@@ -30,15 +37,12 @@ public:
     writeItems(item_map_);
 
     // use the present position as the initial position command
-    readAllStates();
     data_->pos_cmd = data_->pos;
     data_->vel_cmd = 0.; // use velocity limit in the dynamixel's control table
     data_->eff_cmd = 0.; // use torque limit in the dynamixel's control table
     prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
     prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
     prev_eff_cmd_ = std::numeric_limits< double >::quiet_NaN();
-
-    readItems(&data_->additional_cmds);
     prev_additional_cmds_ = data_->additional_cmds;
 
     cached_pos_ = boost::none;
