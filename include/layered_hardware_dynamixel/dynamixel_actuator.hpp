@@ -151,11 +151,13 @@ public:
     }
 
     // number of modes after starting controllers
+    OperatingModePtr last_mode_to_start;
     for (const hi::ControllerInfo &starting_controller : starting_controller_list) {
       const std::map< std::string, OperatingModePtr >::const_iterator mode_to_start(
           mode_map_.find(starting_controller.name));
       if (mode_to_start != mode_map_.end() && mode_to_start->second) {
         ++n_modes;
+        last_mode_to_start = mode_to_start->second;
       }
     }
 
@@ -166,6 +168,9 @@ public:
                        << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
       return false;
     }
+
+    // let the starting mode prepare
+    last_mode_to_start->prepareStart();
 
     return true;
   }

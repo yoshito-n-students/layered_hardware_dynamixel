@@ -21,6 +21,12 @@ public:
               const std::map< std::string, std::int32_t > &item_map)
       : OperatingModeBase("current", data), item_map_(item_map) {}
 
+  virtual void prepareStart() override {
+    // fetch initial value of commands here
+    // to make them valid before executing a controller's starting()
+    readItems(&data_->additional_cmds);
+  }
+  
   virtual void starting() override {
     // switch to current mode
     enableOperatingMode(&DynamixelWorkbench::setCurrentControlMode);
@@ -28,8 +34,6 @@ public:
     // set reasonable initial command
     data_->eff_cmd = 0.;
     prev_eff_cmd_ = std::numeric_limits< double >::quiet_NaN();
-
-    readItems(&data_->additional_cmds);
     prev_additional_cmds_ = data_->additional_cmds;
   }
 
