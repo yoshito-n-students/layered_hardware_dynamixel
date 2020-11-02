@@ -27,7 +27,7 @@ namespace layered_hardware_dynamixel {
 class DynamixelActuatorLayer : public lh::LayerBase {
 public:
   virtual bool init(hi::RobotHW *const hw, const ros::NodeHandle &param_nh,
-                    const std::string &urdf_str) {
+                    const std::string &urdf_str) override {
     // make actuator interfaces registered to the hardware
     // so that other layers can find the interfaces
     makeRegistered< hi::ActuatorStateInterface >(hw);
@@ -74,7 +74,7 @@ public:
   }
 
   virtual bool prepareSwitch(const std::list< hi::ControllerInfo > &start_list,
-                             const std::list< hi::ControllerInfo > &stop_list) {
+                             const std::list< hi::ControllerInfo > &stop_list) override {
     // dry-update of the list of running controllers
     const ControllerSet updated_list(controllers_.updated(start_list, stop_list));
 
@@ -89,7 +89,7 @@ public:
   }
 
   virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
-                        const std::list< hi::ControllerInfo > &stop_list) {
+                        const std::list< hi::ControllerInfo > &stop_list) override {
     // update the list of running controllers
     controllers_.update(start_list, stop_list);
 
@@ -99,14 +99,14 @@ public:
     }
   }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) {
+  virtual void read(const ros::Time &time, const ros::Duration &period) override {
     // read from all actuators
     for (const DynamixelActuatorPtr &ator : actuators_) {
       ator->read(time, period);
     }
   }
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) {
+  virtual void write(const ros::Time &time, const ros::Duration &period) override {
     // write to all actuators
     for (const DynamixelActuatorPtr &ator : actuators_) {
       ator->write(time, period);

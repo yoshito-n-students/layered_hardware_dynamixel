@@ -14,21 +14,21 @@ class RebootMode : public OperatingModeBase {
 public:
   RebootMode(const DynamixelActuatorDataPtr &data) : OperatingModeBase("reboot", data) {}
 
-  virtual void starting() {
+  virtual void starting() override {
     reboot();
     // confirm the actuator has been rebooted by ping for certain duration
     pingFor(ros::Duration(0.5));
   }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) {
+  virtual void read(const ros::Time &time, const ros::Duration &period) override {
     // nothing to do
   }
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) {
+  virtual void write(const ros::Time &time, const ros::Duration &period) override {
     // nothing to do
   }
 
-  virtual void stopping() {
+  virtual void stopping() override {
     // nothing to do
   }
 };

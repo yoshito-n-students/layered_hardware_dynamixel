@@ -15,17 +15,17 @@ public:
   ClearMultiTurnMode(const DynamixelActuatorDataPtr &data)
       : OperatingModeBase("clear_multi_turn", data) {}
 
-  virtual void starting() { clearMultiTurn(); }
+  virtual void starting() override { clearMultiTurn(); }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) {
+  virtual void read(const ros::Time &time, const ros::Duration &period) override {
     // nothing to do
   }
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) {
+  virtual void write(const ros::Time &time, const ros::Duration &period) override {
     // nothing to do
   }
 
-  virtual void stopping() {
+  virtual void stopping() override {
     // nothing to do
   }
 };

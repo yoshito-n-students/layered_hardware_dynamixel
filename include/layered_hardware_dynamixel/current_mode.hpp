@@ -21,7 +21,7 @@ public:
               const std::map< std::string, std::int32_t > &item_map)
       : OperatingModeBase("current", data), item_map_(item_map) {}
 
-  virtual void starting() {
+  virtual void starting() override {
     // switch to current mode
     enableOperatingMode(&DynamixelWorkbench::setCurrentControlMode);
 
@@ -33,9 +33,11 @@ public:
     prev_additional_cmds_ = data_->additional_cmds;
   }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) { readAllStates(); }
+  virtual void read(const ros::Time &time, const ros::Duration &period) override {
+    readAllStates();
+  }
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) {
+  virtual void write(const ros::Time &time, const ros::Duration &period) override {
     if (!std::isnan(data_->eff_cmd) && areNotEqual(data_->eff_cmd, prev_eff_cmd_)) {
       writeEffortCommand();
       prev_eff_cmd_ = data_->eff_cmd;
@@ -51,7 +53,7 @@ public:
     }
   }
 
-  virtual void stopping() { torqueOff(); }
+  virtual void stopping() override { torqueOff(); }
 
 private:
   const std::map< std::string, std::int32_t > item_map_;
