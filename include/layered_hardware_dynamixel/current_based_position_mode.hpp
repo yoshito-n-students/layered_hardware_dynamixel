@@ -23,7 +23,7 @@ public:
                            const std::map< std::string, std::int32_t > &item_map)
       : OperatingModeBase("current_based_position", data), item_map_(item_map) {}
 
-  virtual void starting() {
+  virtual void starting() override {
     // switch to current-based position mode
     enableOperatingMode(&DynamixelWorkbench::setCurrentBasedPositionControlMode);
 
@@ -44,12 +44,12 @@ public:
     cached_pos_ = boost::none;
   }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) {
+  virtual void read(const ros::Time &time, const ros::Duration &period) override {
     // read pos, vel, eff, etc
     readAllStates();
   }
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) {
+  virtual void write(const ros::Time &time, const ros::Duration &period) override {
     // write profile velocity if updated
     const bool do_write_vel(!std::isnan(data_->vel_cmd) &&
                             areNotEqual(data_->vel_cmd, prev_vel_cmd_));
@@ -101,7 +101,7 @@ public:
     }
   }
 
-  virtual void stopping() { torqueOff(); }
+  virtual void stopping() override { torqueOff(); }
 
 private:
   const std::map< std::string, std::int32_t > item_map_;
