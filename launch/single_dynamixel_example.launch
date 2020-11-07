@@ -64,16 +64,24 @@
         controller_groups:
             posvel:
                 - joint_state_controller
+                - additional_state_controller
                 - posvel_controller
+                - led_controller
             posveleff:
                 - joint_state_controller
+                - additional_state_controller
                 - posveleff_controller
+                - led_controller
             velocity:
                 - joint_state_controller
+                - additional_state_controller
                 - velocity_controller
+                - led_controller
             effort:
                 - joint_state_controller
+                - additional_state_controller
                 - effort_controller
+                - led_controller
     </rosparam>
 
     <!-- Controller starter -->
