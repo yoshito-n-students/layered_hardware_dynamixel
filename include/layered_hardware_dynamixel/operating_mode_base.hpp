@@ -25,8 +25,6 @@ public:
   std::string getName() const { return name_; }
 
   // TODO: retrun bool to inform result of mode switching to the upper class
-  virtual void prepareStart() = 0;
-
   virtual void starting() = 0;
 
   virtual void read(const ros::Time &time, const ros::Duration &period) = 0;

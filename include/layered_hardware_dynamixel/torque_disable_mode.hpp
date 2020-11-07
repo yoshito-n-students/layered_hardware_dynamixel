@@ -14,10 +14,6 @@ public:
   TorqueDisableMode(const DynamixelActuatorDataPtr &data)
       : OperatingModeBase("torque_disable", data) {}
 
-  virtual void prepareStart() override {
-    // nothing to do
-  }
-  
   virtual void starting() override { torqueOff(); }
 
   virtual void read(const ros::Time &time, const ros::Duration &period) override {
