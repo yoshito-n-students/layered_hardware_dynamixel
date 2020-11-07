@@ -14,10 +14,6 @@ class RebootMode : public OperatingModeBase {
 public:
   RebootMode(const DynamixelActuatorDataPtr &data) : OperatingModeBase("reboot", data) {}
 
-  virtual void prepareStart() override {
-    // nothing to do
-  }
-  
   virtual void starting() override {
     reboot();
     // confirm the actuator has been rebooted by ping for certain duration
