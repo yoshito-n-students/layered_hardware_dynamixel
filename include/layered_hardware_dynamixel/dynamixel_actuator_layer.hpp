@@ -12,6 +12,7 @@
 #include <hardware_interface/robot_hw.h>
 #include <layered_hardware/layer_base.hpp>
 #include <layered_hardware_dynamixel/common_namespaces.hpp>
+#include <layered_hardware_dynamixel/controller_set.hpp>
 #include <layered_hardware_dynamixel/dynamixel_actuator.hpp>
 #include <ros/console.h>
 #include <ros/duration.h>
@@ -74,20 +75,27 @@ public:
 
   virtual bool prepareSwitch(const std::list< hi::ControllerInfo > &start_list,
                              const std::list< hi::ControllerInfo > &stop_list) {
+    // dry-update of the list of running controllers
+    const ControllerSet updated_list(controllers_.updated(start_list, stop_list));
+
     // ask to all actuators if controller switching is possible
     BOOST_FOREACH (const DynamixelActuatorPtr &ator, actuators_) {
-      if (!ator->prepareSwitch(start_list, stop_list)) {
+      if (!ator->prepareSwitch(updated_list)) {
         return false;
       }
     }
+
     return true;
   }
 
   virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
                         const std::list< hi::ControllerInfo > &stop_list) {
+    // update the list of running controllers
+    controllers_.update(start_list, stop_list);
+
     // notify controller switching to all actuators
     BOOST_FOREACH (const DynamixelActuatorPtr &ator, actuators_) {
-      ator->doSwitch(start_list, stop_list);
+      ator->doSwitch(controllers_);
     }
   }
 
@@ -113,6 +121,7 @@ private:
 
 private:
   DynamixelWorkbench dxl_wb_;
+  ControllerSet controllers_;
   std::vector< DynamixelActuatorPtr > actuators_;
 };
 } // namespace layered_hardware_dynamixel

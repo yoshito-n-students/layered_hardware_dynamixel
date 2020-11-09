@@ -11,6 +11,7 @@
 #include <hardware_interface/robot_hw.h>
 #include <layered_hardware_dynamixel/clear_multi_turn_mode.hpp>
 #include <layered_hardware_dynamixel/common_namespaces.hpp>
+#include <layered_hardware_dynamixel/controller_set.hpp>
 #include <layered_hardware_dynamixel/current_based_position_mode.hpp>
 #include <layered_hardware_dynamixel/current_mode.hpp>
 #include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
@@ -112,78 +113,53 @@ public:
     return true;
   }
 
-  bool prepareSwitch(const std::list< hi::ControllerInfo > &starting_controller_list,
-                     const std::list< hi::ControllerInfo > &stopping_controller_list) {
+  bool prepareSwitch(const ControllerSet &controllers) {
     // check if switching is possible by counting number of operating modes after switching
-
-    // number of modes before switching
-    std::size_t n_modes(present_mode_ ? 1 : 0);
-
-    // number of modes after stopping controllers
-    if (n_modes != 0) {
-      BOOST_FOREACH (const hi::ControllerInfo &stopping_controller, stopping_controller_list) {
-        const std::map< std::string, OperatingModePtr >::const_iterator mode_to_stop(
-            mode_map_.find(stopping_controller.name));
-        if (mode_to_stop != mode_map_.end() && mode_to_stop->second == present_mode_) {
-          n_modes = 0;
-          break;
+    std::size_t n_modes(0);
+    typedef std::map< std::string, OperatingModePtr > ModeMap;
+    BOOST_FOREACH (const ModeMap::value_type &mode, mode_map_) {
+      if (controllers.contains(mode.first)) {
+        ++n_modes;
+        if (n_modes > 1) {
+          return false;
         }
       }
     }
-
-    // number of modes after starting controllers
-    BOOST_FOREACH (const hi::ControllerInfo &starting_controller, starting_controller_list) {
-      const std::map< std::string, OperatingModePtr >::const_iterator mode_to_start(
-          mode_map_.find(starting_controller.name));
-      if (mode_to_start != mode_map_.end() && mode_to_start->second) {
-        ++n_modes;
-      }
-    }
-
-    // assert 0 or 1 operating modes. multiple modes are impossible.
-    if (n_modes != 0 && n_modes != 1) {
-      ROS_ERROR_STREAM("DynamixelActuator::prepareSwitch(): Rejected unfeasible controller "
-                       "switching for the actuator '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
-      return false;
-    }
-
     return true;
   }
 
-  void doSwitch(const std::list< hi::ControllerInfo > &starting_controller_list,
-                const std::list< hi::ControllerInfo > &stopping_controller_list) {
-    // stop actuator's operating mode according to stopping controller list
-    if (present_mode_) {
-      BOOST_FOREACH (const hi::ControllerInfo &stopping_controller, stopping_controller_list) {
-        const std::map< std::string, OperatingModePtr >::const_iterator mode_to_stop(
-            mode_map_.find(stopping_controller.name));
-        if (mode_to_stop != mode_map_.end() && mode_to_stop->second == present_mode_) {
-          ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Stopping operating mode '"
-                          << present_mode_->getName() << "' for the actuator '" << data_->name
-                          << "' (id: " << static_cast< int >(data_->id) << ")");
-          present_mode_->stopping();
-          present_mode_ = OperatingModePtr();
-          break;
-        }
+  void doSwitch(const ControllerSet &controllers) {
+    // find the next mode to run by the list of running controllers after switching
+    OperatingModePtr next_mode;
+    typedef std::map< std::string, OperatingModePtr > ModeMap;
+    BOOST_FOREACH (const ModeMap::value_type &mode, mode_map_) {
+      if (controllers.contains(mode.first)) {
+        next_mode = mode.second;
+        // no more iterations are required because prepareSwitch() ensures
+        // there is one match at the maximum
+        break;
       }
     }
 
-    // start actuator's operating modes according to starting controllers
-    if (!present_mode_) {
-      BOOST_FOREACH (const hi::ControllerInfo &starting_controller, starting_controller_list) {
-        const std::map< std::string, OperatingModePtr >::const_iterator mode_to_start(
-            mode_map_.find(starting_controller.name));
-        if (mode_to_start != mode_map_.end() && mode_to_start->second) {
-          ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Starting operating mode '"
-                          << mode_to_start->second->getName() << "' for the actuator '"
-                          << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
-          present_mode_ = mode_to_start->second;
-          present_mode_->starting();
-          break;
-        }
-      }
+    // do nothing if no mode switching is required
+    if (next_mode == present_mode_) {
+      return;
     }
+
+    // switch modes
+    if (present_mode_) {
+      ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Stopping operating mode '"
+                      << present_mode_->getName() << "' for the actuator '" << data_->name
+                      << "' (id: " << static_cast< int >(data_->id) << ")");
+      present_mode_->stopping();
+    }
+    if (next_mode) {
+      ROS_INFO_STREAM("DynamixelActuator::doSwitch(): Starting operating mode '"
+                      << next_mode->getName() << "' for the actuator '" << data_->name
+                      << "' (id: " << static_cast< int >(data_->id) << ")");
+      next_mode->starting();
+    }
+    present_mode_ = next_mode;
   }
 
   void read(const ros::Time &time, const ros::Duration &period) {
