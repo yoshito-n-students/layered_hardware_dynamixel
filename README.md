@@ -23,7 +23,7 @@ ___torque_constant___ (double, required)
 * ex. if the actuator's stall torque & current are 10.6 N*m & 4.4 A at the operating voltage, it would be 2.41 (= 10.6 / 4.4)
 
 ___operating_mode_map___ (map<string, string>, required)
-* map from ROS's controller names to Dynamixel's operating mode names
+* map from ROS's controller names or controller group names to Dynamixel's operating mode names
 * possible operating mode names are 'clear_multi_turn', 'current_based_position', 'current', 'extended_position', 'reboot', 'torque_disable', & 'velocity'
 
 ___item_map/<operating_mode_name>___ (map<string, int>, optional)

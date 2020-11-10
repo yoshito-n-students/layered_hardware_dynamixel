@@ -23,10 +23,10 @@
                         id: 1
                         torque_constant: 2.41
                         operating_mode_map:
-                            posvel_controller: extended_position
-                            posveleff_controller: current_based_position
-                            velocity_controller: velocity
-                            effort_controller: current
+                            posvel: extended_position
+                            posveleff: current_based_position
+                            velocity: velocity
+                            effort: current
                             reboot_controller: reboot
         </rosparam>
     </node>
@@ -50,11 +50,24 @@
             joint: dynamixel_joint
         reboot_controller:
             type: empty_controller/EmptyController
+        controller_groups:
+            posvel:
+                - joint_state_controller
+                - posvel_controller
+            posveleff:
+                - joint_state_controller
+                - posveleff_controller
+            velocity:
+                - joint_state_controller
+                - velocity_controller
+            effort:
+                - joint_state_controller
+                - effort_controller
     </rosparam>
 
     <!-- Controller starter -->
     <node name="controller_starter" pkg="controller_manager" type="controller_manager" output="screen"
-          args="spawn joint_state_controller posvel_controller" />
+          args="controller_group spawn posvel" />
 
     <node name="controller_loader" pkg="controller_manager" type="controller_manager" output="screen"
           args="load posveleff_controller velocity_controller effort_controller reboot_controller" />

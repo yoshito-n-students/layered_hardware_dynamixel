@@ -4,6 +4,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 #include <hardware_interface/actuator_command_interface.h>
 #include <hardware_interface/actuator_state_interface.h>
@@ -24,6 +25,7 @@
 #include <ros/duration.h>
 #include <ros/names.h>
 #include <ros/node_handle.h>
+#include <ros/param.h>
 #include <ros/time.h>
 
 #include <boost/cstdint.hpp>
@@ -98,6 +100,16 @@ public:
       return false;
     }
     BOOST_FOREACH (const ModeNameMap::value_type &mode_name, mode_name_map) {
+      //
+      const std::vector< std::string > controller_names(resolveControllerNames(mode_name.first));
+      if (controller_names.empty()) {
+        ROS_ERROR_STREAM("DynamixelActuator::init(): Failed to resolve '"
+                         << mode_name.first
+                         << "' as a controller or controller group name for the actuator '"
+                         << data_->name << "' (id: " << static_cast< int >(data_->id) << ")");
+        return false;
+      }
+      //
       std::map< std::string, int > item_map;
       param_nh.getParam(ros::names::append("item_map", mode_name.second), item_map);
       const OperatingModePtr mode(makeOperatingMode(mode_name.second, item_map));
@@ -107,7 +119,7 @@ public:
                          << "' (id: " << static_cast< int >(data_->id) << ")");
         return false;
       }
-      mode_map_[mode_name.first] = mode;
+      mode_map_[controller_names] = mode;
     }
 
     return true;
@@ -116,7 +128,7 @@ public:
   bool prepareSwitch(const ControllerSet &controllers) {
     // check if switching is possible by counting number of operating modes after switching
     std::size_t n_modes(0);
-    typedef std::map< std::string, OperatingModePtr > ModeMap;
+    typedef std::map< std::vector< std::string >, OperatingModePtr > ModeMap;
     BOOST_FOREACH (const ModeMap::value_type &mode, mode_map_) {
       if (controllers.contains(mode.first)) {
         ++n_modes;
@@ -131,7 +143,7 @@ public:
   void doSwitch(const ControllerSet &controllers) {
     // find the next mode to run by the list of running controllers after switching
     OperatingModePtr next_mode;
-    typedef std::map< std::string, OperatingModePtr > ModeMap;
+    typedef std::map< std::vector< std::string >, OperatingModePtr > ModeMap;
     BOOST_FOREACH (const ModeMap::value_type &mode, mode_map_) {
       if (controllers.contains(mode.first)) {
         next_mode = mode.second;
@@ -186,6 +198,28 @@ private:
     return true;
   }
 
+  static std::vector< std::string > resolveControllerNames(const std::string &key) {
+    // try resolving the key as a controller group name
+    // by searching "<node_ns>/controller_group/<key>"
+    {
+      std::vector< std::string > val;
+      if (ros::param::get(ros::names::append("controller_groups", key), val)) {
+        return val;
+      }
+    }
+
+    // try resolving the key as a controller name
+    // by searching "<node_ns>/<key>/type"
+    {
+      std::string val;
+      if (ros::param::get(ros::names::append(key, "type"), val)) {
+        return std::vector< std::string >(1, key);
+      }
+    }
+
+    return std::vector< std::string >();
+  }
+
   OperatingModePtr makeOperatingMode(const std::string &mode_str,
                                      const std::map< std::string, int > &item_map) {
     if (mode_str == "clear_multi_turn") {
@@ -212,7 +246,7 @@ private:
 private:
   DynamixelActuatorDataPtr data_;
 
-  std::map< std::string, OperatingModePtr > mode_map_;
+  std::map< std::vector< std::string >, OperatingModePtr > mode_map_;
   OperatingModePtr present_mode_;
 };
 
