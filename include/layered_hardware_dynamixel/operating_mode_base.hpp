@@ -139,9 +139,9 @@ protected:
     if (!readItem("Present_Current", &value)) {
       return false;
     }
-    // TODO: use new API once supported
-    data_->eff = data_->dxl_wb->convertValue2Current(/* data_->id,*/ value) *
-                 data_->torque_constant / 1000.0;
+    // mA -> N*m
+    data_->eff =
+        data_->dxl_wb->convertValue2Current(data_->id, value) * data_->torque_constant / 1000.0;
     return true;
   }
 
@@ -275,10 +275,9 @@ protected:
   }
 
   bool writeEffortCommand() {
+    // N*m -> mA
     const float cmd(data_->eff_cmd / data_->torque_constant * 1000.0);
-    // TODO: use new API once supported
-    const std::int16_t cmd_value(data_->dxl_wb->convertCurrent2Value(
-        /* data_->id, */ cmd));
+    const std::int16_t cmd_value(data_->dxl_wb->convertCurrent2Value(data_->id, cmd));
     return writeItem("Goal_Current", cmd_value);
   }
 
