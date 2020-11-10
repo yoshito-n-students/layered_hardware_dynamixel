@@ -81,6 +81,11 @@ protected:
   // read functions for chiled classes
   //
 
+  bool hasItem(const std::string &item) {
+    const char *log(NULL);
+    return data_->dxl_wb->getItemInfo(data_->id, item.c_str(), &log) != NULL;
+  }
+
   bool readItem(const std::string &item, int32_t *value) {
     const char *log(NULL);
     if (!data_->dxl_wb->itemRead(data_->id, item.c_str(), value, &log)) {
@@ -127,6 +132,8 @@ protected:
     return true;
   }
 
+  bool hasEffort() { return hasItem("Present_Current"); }
+
   bool readEffort() {
     std::int32_t value;
     if (!readItem("Present_Current", &value)) {
@@ -153,7 +160,7 @@ protected:
     // on the other hand, lines below call all anyway to read info as much as possible.
     const bool pos_result(readPosition());
     const bool vel_result(readVelocity());
-    const bool eff_result(readEffort());
+    const bool eff_result(hasEffort() ? readEffort() : true);
     const bool additional_result(readAdditionalStates());
     return pos_result && vel_result && eff_result && additional_result;
   }
