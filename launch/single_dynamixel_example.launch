@@ -86,10 +86,7 @@
 
     <!-- Controller starter -->
     <node name="controller_starter" pkg="controller_manager" type="controller_group" output="screen"
-          args="spawn posvel" />
-
-    <node name="controller_loader" pkg="controller_manager" type="controller_manager" output="screen"
-          args="load posveleff_controller velocity_controller effort_controller reboot_controller" />
+          args="switch posvel" />
 
     <!-- joint state msg to tf -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" />
