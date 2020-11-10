@@ -66,8 +66,8 @@
     </rosparam>
 
     <!-- Controller starter -->
-    <node name="controller_starter" pkg="controller_manager" type="controller_manager" output="screen"
-          args="controller_group spawn posvel" />
+    <node name="controller_starter" pkg="controller_manager" type="controller_group" output="screen"
+          args="spawn posvel" />
 
     <node name="controller_loader" pkg="controller_manager" type="controller_manager" output="screen"
           args="load posveleff_controller velocity_controller effort_controller reboot_controller" />
