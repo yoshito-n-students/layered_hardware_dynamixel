@@ -122,13 +122,15 @@ protected:
   }
 
   bool readVelocity() {
-    std::int32_t value;
-    // As of dynamixel_workbench_toolbox v2.0.0,
-    // DynamixelWorkbench::getVelocity() reads a wrong item ...
-    if (!readItem("Present_Velocity", &value)) {
+    float vel;
+    const char *log(NULL);
+    if (!data_->dxl_wb->getVelocity(data_->id, &vel, &log)) {
+      ROS_ERROR_STREAM("OperatingModeBase::readPosition(): Failed to read velocity from '"
+                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << "): " << (log ? log : "No log from DynamixelWorkbench::getVelocity()"));
       return false;
     }
-    data_->vel = data_->dxl_wb->convertValue2Velocity(data_->id, value);
+    data_->vel = vel;
     return true;
   }
 
