@@ -2,6 +2,13 @@
 Changelog for package layered_hardware_dynamixel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.5 (2020-XX-XX)
+------------------
+* C++11
+* Support additional states and commands
+* Operating mode can be associated with not only a controller but also a controller group
+* Skip reading effort when actuator does not offer
+
 0.0.4 (2020-09-18)
 ------------------
 * Fix the unit of effort (mNm to Nm)
