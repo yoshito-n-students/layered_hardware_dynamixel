@@ -11,6 +11,8 @@
 #include <hardware_interface_extensions/integer_interface.hpp>
 #include <layered_hardware_dynamixel/common_namespaces.hpp>
 
+#include <boost/optional.hpp>
+
 namespace layered_hardware_dynamixel {
 
 struct DynamixelActuatorData {
@@ -39,6 +41,7 @@ struct DynamixelActuatorData {
   const double torque_constant;
 
   // states
+  boost::optional< bool > has_eff;
   double pos, vel, eff;
   std::map< std::string, std::int32_t > additional_states;
 

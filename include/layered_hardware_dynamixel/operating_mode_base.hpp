@@ -156,11 +156,16 @@ protected:
   }
 
   bool readAllStates() {
+    // check whether the actuator supports effort if never
+    if (data_->has_eff == boost::none) {
+      data_->has_eff = hasEffort();
+    }
+
     // if one fails, "return readPosition() && readVelocity() && ..." does not call others.
     // on the other hand, lines below call all anyway to read info as much as possible.
     const bool pos_result(readPosition());
     const bool vel_result(readVelocity());
-    const bool eff_result(hasEffort() ? readEffort() : true);
+    const bool eff_result(*data_->has_eff ? readEffort() : true);
     const bool additional_result(readAdditionalStates());
     return pos_result && vel_result && eff_result && additional_result;
   }
