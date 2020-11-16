@@ -2,7 +2,7 @@
 Changelog for package layered_hardware_dynamixel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.5 (2020-XX-XX)
+0.0.5 (2020-11-17)
 ------------------
 * C++11
 * Support additional states and commands
