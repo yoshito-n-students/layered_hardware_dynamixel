@@ -21,6 +21,7 @@
 #include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
 #include <layered_hardware_dynamixel/extended_position_mode.hpp>
 #include <layered_hardware_dynamixel/operating_mode_base.hpp>
+#include <layered_hardware_dynamixel/position_mode.hpp>
 #include <layered_hardware_dynamixel/reboot_mode.hpp>
 #include <layered_hardware_dynamixel/torque_disable_mode.hpp>
 #include <layered_hardware_dynamixel/velocity_mode.hpp>
@@ -262,6 +263,8 @@ private:
       return std::make_shared< CurrentBasedPositionMode >(data_, item_map);
     } else if (mode_str == "extended_position") {
       return std::make_shared< ExtendedPositionMode >(data_, item_map);
+    } else if (mode_str == "position") {
+      return std::make_shared< PositionMode >(data_, item_map);
     } else if (mode_str == "reboot") {
       return std::make_shared< RebootMode >(data_);
     } else if (mode_str == "torque_disable") {
