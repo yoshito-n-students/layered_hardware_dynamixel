@@ -42,7 +42,7 @@ protected:
     const char *log(NULL);
     if (!data_->dxl_wb->ping(data_->id, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::ping(): Failed to ping to '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << data_->name << "' (id: " << static_cast<int>(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench::ping()"));
       return false;
     }
@@ -54,7 +54,7 @@ protected:
     while (true) {
       if (ros::Time::now() > timeout_abs) {
         ROS_ERROR_STREAM("OperatingModeBase::pingFor(): No ping response from '"
-                         << data_->name << "' (id: " << static_cast< int >(data_->id) << ") for "
+                         << data_->name << "' (id: " << static_cast<int>(data_->id) << ") for "
                          << timeout.toSec() << " s");
         return false;
       }
@@ -70,7 +70,7 @@ protected:
     const char *log(NULL);
     if (!data_->dxl_wb->reboot(data_->id, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::reboot(): Failed to reboot '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << data_->name << "' (id: " << static_cast<int>(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench::reboot()"));
       return false;
     }
@@ -91,16 +91,16 @@ protected:
     if (!data_->dxl_wb->itemRead(data_->id, item.c_str(), value, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::readItem(): Failed to read control table item '"
                        << item << "' of '" << data_->name
-                       << "' (id: " << static_cast< int >(data_->id)
+                       << "' (id: " << static_cast<int>(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench::itemRead()"));
       return false;
     }
     return true;
   }
 
-  bool readItems(std::map< std::string, std::int32_t > *const items) {
+  bool readItems(std::map<std::string, std::int32_t> *const items) {
     bool result(true);
-    for (std::map< std::string, std::int32_t >::value_type &item : *items) {
+    for (std::map<std::string, std::int32_t>::value_type &item : *items) {
       if (!readItem(item.first, &item.second)) {
         result = false;
       }
@@ -113,7 +113,7 @@ protected:
     const char *log(NULL);
     if (!data_->dxl_wb->getRadian(data_->id, &rad, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::readPosition(): Failed to read position from '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << data_->name << "' (id: " << static_cast<int>(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench::getRadian()"));
       return false;
     }
@@ -147,7 +147,7 @@ protected:
 
   bool readAdditionalStates() {
     bool result(true);
-    for (std::map< std::string, std::int32_t >::value_type &state : data_->additional_states) {
+    for (std::map<std::string, std::int32_t>::value_type &state : data_->additional_states) {
       if (!readItem(state.first, &state.second)) {
         result = false;
       }
@@ -181,7 +181,7 @@ protected:
     log = NULL;
     if (!data_->dxl_wb->torqueOff(data_->id, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to disable torque of '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << data_->name << "' (id: " << static_cast<int>(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench::torqueOff()"));
       return false;
     }
@@ -189,7 +189,7 @@ protected:
     log = NULL;
     if (!(data_->dxl_wb->*set_func)(data_->id, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to set operating mode of '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << data_->name << "' (id: " << static_cast<int>(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench"));
       return false;
     }
@@ -197,7 +197,7 @@ protected:
     log = NULL;
     if (!data_->dxl_wb->torqueOn(data_->id, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::enableOperatingMode(): Failed to enable torque of '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << data_->name << "' (id: " << static_cast<int>(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench::torqueOn()"));
       return false;
     }
@@ -208,7 +208,7 @@ protected:
     const char *log(NULL);
     if (!data_->dxl_wb->torqueOff(data_->id, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::torqueOff(): Failed to disable torque of '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id)
+                       << data_->name << "' (id: " << static_cast<int>(data_->id)
                        << "): " << (log ? log : "No log from DynamixelWorkbench::torqueOff()"));
       return false;
     }
@@ -219,7 +219,7 @@ protected:
     const char *log(NULL);
     if (!data_->dxl_wb->clearMultiTurn(data_->id, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::clearMultiTurn(): Failed to clear multi turn count of '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << "): "
+                       << data_->name << "' (id: " << static_cast<int>(data_->id) << "): "
                        << (log ? log : "No log from DynamixelWorkbench::clearMultiTurn()"));
       return false;
     }
@@ -231,15 +231,15 @@ protected:
     if (!data_->dxl_wb->itemWrite(data_->id, item.c_str(), value, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::writeItem(): Failed to set control table item '"
                        << item << "' of '" << data_->name
-                       << "' (id: " << static_cast< int >(data_->id) << " to " << value << ": "
+                       << "' (id: " << static_cast<int>(data_->id) << " to " << value << ": "
                        << (log ? log : "No log from DynamixelWorkbench::itemWrite()"));
       return false;
     }
     return true;
   }
 
-  bool writeItems(const std::map< std::string, std::int32_t > &item_map) {
-    for (const std::map< std::string, std::int32_t >::value_type &item : item_map) {
+  bool writeItems(const std::map<std::string, std::int32_t> &item_map) {
+    for (const std::map<std::string, std::int32_t>::value_type &item : item_map) {
       if (!writeItem(item.first, item.second)) {
         return false;
       }
@@ -248,33 +248,31 @@ protected:
   }
 
   bool writePositionCommand() {
-    const float cmd(static_cast< float >(data_->pos_cmd));
+    const float cmd(static_cast<float>(data_->pos_cmd));
     const char *log(NULL);
     if (!data_->dxl_wb->goalPosition(data_->id, cmd, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::writePositionCommand(): Failed to set goal position of '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ") to "
-                       << cmd << ": "
-                       << (log ? log : "No log from DynamixelWorkbench::goalPosition()"));
+                       << data_->name << "' (id: " << static_cast<int>(data_->id) << ") to " << cmd
+                       << ": " << (log ? log : "No log from DynamixelWorkbench::goalPosition()"));
       return false;
     }
     return true;
   }
 
   bool writeVelocityCommand() {
-    const float cmd(static_cast< float >(data_->vel_cmd));
+    const float cmd(static_cast<float>(data_->vel_cmd));
     const char *log(NULL);
     if (!data_->dxl_wb->goalVelocity(data_->id, cmd, &log)) {
       ROS_ERROR_STREAM("OperatingModeBase::writeVelocityCommand(): Failed to set goal velocity of '"
-                       << data_->name << "' (id: " << static_cast< int >(data_->id) << ") to "
-                       << cmd << ": "
-                       << (log ? log : "No log from DynamixelWorkbench::goalVelocity()"));
+                       << data_->name << "' (id: " << static_cast<int>(data_->id) << ") to " << cmd
+                       << ": " << (log ? log : "No log from DynamixelWorkbench::goalVelocity()"));
       return false;
     }
     return true;
   }
 
   bool writeProfileVelocity() {
-    const float cmd(static_cast< float >(std::abs(data_->vel_cmd)));
+    const float cmd(static_cast<float>(std::abs(data_->vel_cmd)));
     const std::int32_t cmd_value(data_->dxl_wb->convertVelocity2Value(data_->id, cmd));
     return writeItem("Profile_Velocity", cmd_value);
   }
@@ -292,7 +290,7 @@ protected:
 
   static bool areNotEqual(const double a, const double b) {
     // does !(|a - b| < EPS) instead of (|a - b| >= EPS) to return True when a and/or b is NaN
-    return !(std::abs(a - b) < std::numeric_limits< double >::epsilon());
+    return !(std::abs(a - b) < std::numeric_limits<double>::epsilon());
   }
 
 protected:
@@ -300,8 +298,8 @@ protected:
   const DynamixelActuatorDataPtr data_;
 };
 
-typedef std::shared_ptr< OperatingModeBase > OperatingModePtr;
-typedef std::shared_ptr< const OperatingModeBase > OperatingModeConstPtr;
+typedef std::shared_ptr<OperatingModeBase> OperatingModePtr;
+typedef std::shared_ptr<const OperatingModeBase> OperatingModeConstPtr;
 } // namespace layered_hardware_dynamixel
 
 #endif

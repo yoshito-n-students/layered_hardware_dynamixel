@@ -20,7 +20,7 @@ namespace layered_hardware_dynamixel {
 class PositionMode : public OperatingModeBase {
 public:
   PositionMode(const DynamixelActuatorDataPtr &data,
-               const std::map< std::string, std::int32_t > &item_map)
+               const std::map<std::string, std::int32_t> &item_map)
       : OperatingModeBase("position", data), item_map_(item_map) {}
 
   virtual void starting() override {
@@ -32,7 +32,7 @@ public:
     // use the present position as the initial command
     readAllStates();
     data_->pos_cmd = data_->pos;
-    prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
+    prev_pos_cmd_ = std::numeric_limits<double>::quiet_NaN();
 
     readItems(&data_->additional_cmds);
     prev_additional_cmds_ = data_->additional_cmds;
@@ -54,7 +54,7 @@ public:
     }
 
     // write additional commands only when commands are updated
-    for (const std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
+    for (const std::map<std::string, std::int32_t>::value_type &cmd : data_->additional_cmds) {
       std::int32_t &prev_cmd(prev_additional_cmds_[cmd.first]);
       const bool do_write_cmd(cmd.second != prev_cmd);
       if (do_write_cmd) {
@@ -67,9 +67,9 @@ public:
   virtual void stopping() override { torqueOff(); }
 
 private:
-  const std::map< std::string, std::int32_t > item_map_;
+  const std::map<std::string, std::int32_t> item_map_;
   double prev_pos_cmd_;
-  std::map< std::string, std::int32_t > prev_additional_cmds_;
+  std::map<std::string, std::int32_t> prev_additional_cmds_;
 };
 } // namespace layered_hardware_dynamixel
 

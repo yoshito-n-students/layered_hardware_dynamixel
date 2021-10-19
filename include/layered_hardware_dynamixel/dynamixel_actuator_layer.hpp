@@ -30,15 +30,15 @@ public:
                     const std::string &urdf_str) override {
     // make actuator interfaces registered to the hardware
     // so that other layers can find the interfaces
-    makeRegistered< hi::ActuatorStateInterface >(hw);
-    makeRegistered< hi::PositionActuatorInterface >(hw);
-    makeRegistered< hi::VelocityActuatorInterface >(hw);
-    makeRegistered< hi::EffortActuatorInterface >(hw);
-    makeRegistered< hie::Int32StateInterface >(hw);
-    makeRegistered< hie::Int32Interface >(hw);
+    makeRegistered<hi::ActuatorStateInterface>(hw);
+    makeRegistered<hi::PositionActuatorInterface>(hw);
+    makeRegistered<hi::VelocityActuatorInterface>(hw);
+    makeRegistered<hi::EffortActuatorInterface>(hw);
+    makeRegistered<hie::Int32StateInterface>(hw);
+    makeRegistered<hie::Int32Interface>(hw);
 
     // open USB serial device
-    if (!dxl_wb_.init(param< std::string >(param_nh, "serial_interface", "/dev/ttyUSB0").c_str(),
+    if (!dxl_wb_.init(param<std::string>(param_nh, "serial_interface", "/dev/ttyUSB0").c_str(),
                       param(param_nh, "baudrate", 115200))) {
       ROS_ERROR_STREAM("DynamixelActuatorLayer::init(): Failed to open DynamixelWorkbench");
       return false;
@@ -73,8 +73,8 @@ public:
     return true;
   }
 
-  virtual bool prepareSwitch(const std::list< hi::ControllerInfo > &start_list,
-                             const std::list< hi::ControllerInfo > &stop_list) override {
+  virtual bool prepareSwitch(const std::list<hi::ControllerInfo> &start_list,
+                             const std::list<hi::ControllerInfo> &stop_list) override {
     // dry-update of the list of running controllers
     const ControllerSet updated_list(controllers_.updated(start_list, stop_list));
 
@@ -88,8 +88,8 @@ public:
     return true;
   }
 
-  virtual void doSwitch(const std::list< hi::ControllerInfo > &start_list,
-                        const std::list< hi::ControllerInfo > &stop_list) override {
+  virtual void doSwitch(const std::list<hi::ControllerInfo> &start_list,
+                        const std::list<hi::ControllerInfo> &stop_list) override {
     // update the list of running controllers
     controllers_.update(start_list, stop_list);
 
@@ -116,8 +116,8 @@ public:
 private:
   // make an hardware interface registered. the interface must be in the static memory space
   // to allow access from outside of this plugin.
-  template < typename Interface > static void makeRegistered(hi::RobotHW *const hw) {
-    if (!hw->get< Interface >()) {
+  template <typename Interface> static void makeRegistered(hi::RobotHW *const hw) {
+    if (!hw->get<Interface>()) {
       static Interface iface;
       hw->registerInterface(&iface);
     }
@@ -126,7 +126,7 @@ private:
 private:
   DynamixelWorkbench dxl_wb_;
   ControllerSet controllers_;
-  std::vector< DynamixelActuatorPtr > actuators_;
+  std::vector<DynamixelActuatorPtr> actuators_;
 };
 } // namespace layered_hardware_dynamixel
 

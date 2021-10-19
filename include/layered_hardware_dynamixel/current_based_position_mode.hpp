@@ -20,7 +20,7 @@ namespace layered_hardware_dynamixel {
 class CurrentBasedPositionMode : public OperatingModeBase {
 public:
   CurrentBasedPositionMode(const DynamixelActuatorDataPtr &data,
-                           const std::map< std::string, std::int32_t > &item_map)
+                           const std::map<std::string, std::int32_t> &item_map)
       : OperatingModeBase("current_based_position", data), item_map_(item_map) {}
 
   virtual void starting() override {
@@ -34,9 +34,9 @@ public:
     data_->pos_cmd = data_->pos;
     data_->vel_cmd = 0.; // use velocity limit in the dynamixel's control table
     data_->eff_cmd = 0.; // use torque limit in the dynamixel's control table
-    prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
-    prev_vel_cmd_ = std::numeric_limits< double >::quiet_NaN();
-    prev_eff_cmd_ = std::numeric_limits< double >::quiet_NaN();
+    prev_pos_cmd_ = std::numeric_limits<double>::quiet_NaN();
+    prev_vel_cmd_ = std::numeric_limits<double>::quiet_NaN();
+    prev_eff_cmd_ = std::numeric_limits<double>::quiet_NaN();
 
     readItems(&data_->additional_cmds);
     prev_additional_cmds_ = data_->additional_cmds;
@@ -91,7 +91,7 @@ public:
     }
 
     // write additional commands only when commands are updated
-    for (const std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
+    for (const std::map<std::string, std::int32_t>::value_type &cmd : data_->additional_cmds) {
       std::int32_t &prev_cmd(prev_additional_cmds_[cmd.first]);
       const bool do_write_cmd(cmd.second != prev_cmd);
       if (do_write_cmd) {
@@ -104,10 +104,10 @@ public:
   virtual void stopping() override { torqueOff(); }
 
 private:
-  const std::map< std::string, std::int32_t > item_map_;
+  const std::map<std::string, std::int32_t> item_map_;
   double prev_pos_cmd_, prev_vel_cmd_, prev_eff_cmd_;
-  std::map< std::string, std::int32_t > prev_additional_cmds_;
-  boost::optional< double > cached_pos_;
+  std::map<std::string, std::int32_t> prev_additional_cmds_;
+  boost::optional<double> cached_pos_;
 };
 } // namespace layered_hardware_dynamixel
 

@@ -18,8 +18,8 @@ namespace layered_hardware_dynamixel {
 struct DynamixelActuatorData {
   DynamixelActuatorData(const std::string &_name, DynamixelWorkbench *const _dxl_wb,
                         const std::uint8_t _id, const double _torque_constant,
-                        const std::vector< std::string > &additional_state_names,
-                        const std::vector< std::string > &additional_cmd_names)
+                        const std::vector<std::string> &additional_state_names,
+                        const std::vector<std::string> &additional_cmd_names)
       : name(_name), dxl_wb(_dxl_wb), id(_id), torque_constant(_torque_constant), pos(0.), vel(0.),
         eff(0.), pos_cmd(0.), vel_cmd(0.), eff_cmd(0.) {
     // TODO: this sorts names and breaks the original order.
@@ -41,17 +41,17 @@ struct DynamixelActuatorData {
   const double torque_constant;
 
   // states
-  boost::optional< bool > has_eff;
+  boost::optional<bool> has_eff;
   double pos, vel, eff;
-  std::map< std::string, std::int32_t > additional_states;
+  std::map<std::string, std::int32_t> additional_states;
 
   // commands
   double pos_cmd, vel_cmd, eff_cmd;
-  std::map< std::string, std::int32_t > additional_cmds;
+  std::map<std::string, std::int32_t> additional_cmds;
 };
 
-typedef std::shared_ptr< DynamixelActuatorData > DynamixelActuatorDataPtr;
-typedef std::shared_ptr< const DynamixelActuatorData > DynamixelActuatorDataConstPtr;
+typedef std::shared_ptr<DynamixelActuatorData> DynamixelActuatorDataPtr;
+typedef std::shared_ptr<const DynamixelActuatorData> DynamixelActuatorDataConstPtr;
 
 } // namespace layered_hardware_dynamixel
 

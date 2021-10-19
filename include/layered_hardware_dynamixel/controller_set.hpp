@@ -9,19 +9,18 @@
 
 namespace layered_hardware_dynamixel {
 
-class ControllerSet : public std::set< std::string > {
+class ControllerSet : public std::set<std::string> {
 private:
-  typedef std::set< std::string > Base;
+  typedef std::set<std::string> Base;
 
 public:
-  std::pair< iterator, bool > insert(const hi::ControllerInfo &info) {
+  std::pair<iterator, bool> insert(const hi::ControllerInfo &info) {
     return Base::insert(info.name);
   }
 
   std::size_t erase(const hi::ControllerInfo &info) { return Base::erase(info.name); }
 
-  template < class Container >
-  void update(const Container &start_list, const Container &stop_list) {
+  template <class Container> void update(const Container &start_list, const Container &stop_list) {
     for (const auto /* std::string or hi::ControllerInfo */ &info : start_list) {
       insert(info);
     }
@@ -30,7 +29,7 @@ public:
     }
   }
 
-  template < class Container >
+  template <class Container>
   ControllerSet updated(const Container &start_list, const Container &stop_list) const {
     ControllerSet res(*this);
     res.update(start_list, stop_list);
@@ -41,7 +40,7 @@ public:
 
   bool contains(const hi::ControllerInfo &info) const { return contains(info.name); }
 
-  template < class Container > bool contains(const Container &infos) const {
+  template <class Container> bool contains(const Container &infos) const {
     for (const auto /* std::string or hi::ControllerInfo */ &info : infos) {
       if (!contains(info)) {
         return false;
