@@ -2,74 +2,50 @@
 #define LAYERED_HARDWARE_DYNAMIXEL_POSITION_MODE_HPP
 
 #include <cmath>
-#include <cstdint>
 #include <limits>
-#include <map>
-#include <string>
+#include <memory>
 
-#include <layered_hardware_dynamixel/common_namespaces.hpp>
-#include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
-#include <layered_hardware_dynamixel/operating_mode_base.hpp>
-#include <ros/duration.h>
-#include <ros/time.h>
-
-#include <boost/optional.hpp>
+#include <layered_hardware_dynamixel/dynamixel_actuator_context.hpp>
+#include <layered_hardware_dynamixel/dynamixel_workbench_utils.hpp>
+#include <layered_hardware_dynamixel/operating_mode_interface.hpp>
+#include <rclcpp/duration.hpp>
+#include <rclcpp/time.hpp>
 
 namespace layered_hardware_dynamixel {
 
-class PositionMode : public OperatingModeBase {
+class PositionMode : public OperatingModeInterface {
 public:
-  PositionMode(const DynamixelActuatorDataPtr &data,
-               const std::map< std::string, std::int32_t > &item_map)
-      : OperatingModeBase("position", data), item_map_(item_map) {}
+  PositionMode(const std::shared_ptr<DynamixelActuatorContext> &context)
+      : OperatingModeInterface("position", context) {}
 
   virtual void starting() override {
     // switch to position mode & torque enable
-    enableOperatingMode(&DynamixelWorkbench::setPositionControlMode);
-
-    writeItems(item_map_);
+    enable_operating_mode(context_, &DynamixelWorkbench::setPositionControlMode);
 
     // use the present position as the initial command
-    readAllStates();
-    data_->pos_cmd = data_->pos;
-    prev_pos_cmd_ = std::numeric_limits< double >::quiet_NaN();
-
-    readItems(&data_->additional_cmds);
-    prev_additional_cmds_ = data_->additional_cmds;
+    read_all_states(context_);
+    context_->pos_cmd = context_->pos;
+    prev_pos_cmd_ = std::numeric_limits<double>::quiet_NaN();
   }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) override {
+  virtual void read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
     // read pos, vel, eff, etc
-    readAllStates();
+    read_all_states(context_);
   }
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) override {
+  virtual void write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
     // write goal position if the goal pos or profile velocity have been updated
     // to make the change affect
-    const bool do_write_pos(!std::isnan(data_->pos_cmd) &&
-                            areNotEqual(data_->pos_cmd, prev_pos_cmd_));
-    if (do_write_pos) {
-      writePositionCommand();
-      prev_pos_cmd_ = data_->pos_cmd;
-    }
-
-    // write additional commands only when commands are updated
-    for (const std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
-      std::int32_t &prev_cmd(prev_additional_cmds_[cmd.first]);
-      const bool do_write_cmd(cmd.second != prev_cmd);
-      if (do_write_cmd) {
-        writeItem(cmd.first, cmd.second);
-        prev_cmd = cmd.second;
-      }
+    if (!std::isnan(context_->pos_cmd) && !bitwise_equal(context_->pos_cmd, prev_pos_cmd_)) {
+      write_position_command(context_);
+      prev_pos_cmd_ = context_->pos_cmd;
     }
   }
 
-  virtual void stopping() override { torqueOff(); }
+  virtual void stopping() override { torque_off(context_); }
 
 private:
-  const std::map< std::string, std::int32_t > item_map_;
   double prev_pos_cmd_;
-  std::map< std::string, std::int32_t > prev_additional_cmds_;
 };
 } // namespace layered_hardware_dynamixel
 

@@ -2,63 +2,46 @@
 #define LAYERED_HARDWARE_DYNAMIXEL_CURRNET_MODE_HPP
 
 #include <cmath>
-#include <cstdint>
 #include <limits>
-#include <map>
-#include <string>
+#include <memory>
 
-#include <layered_hardware_dynamixel/common_namespaces.hpp>
-#include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
-#include <layered_hardware_dynamixel/operating_mode_base.hpp>
-#include <ros/duration.h>
-#include <ros/time.h>
+#include <layered_hardware_dynamixel/dynamixel_actuator_context.hpp>
+#include <layered_hardware_dynamixel/dynamixel_workbench_utils.hpp>
+#include <layered_hardware_dynamixel/operating_mode_interface.hpp>
+#include <rclcpp/duration.hpp>
+#include <rclcpp/time.hpp>
 
 namespace layered_hardware_dynamixel {
 
-class CurrentMode : public OperatingModeBase {
+class CurrentMode : public OperatingModeInterface {
 public:
-  CurrentMode(const DynamixelActuatorDataPtr &data,
-              const std::map< std::string, std::int32_t > &item_map)
-      : OperatingModeBase("current", data), item_map_(item_map) {}
+  CurrentMode(const std::shared_ptr<DynamixelActuatorContext> &context)
+      : OperatingModeInterface("current", context) {}
 
   virtual void starting() override {
     // switch to current mode
-    enableOperatingMode(&DynamixelWorkbench::setCurrentControlMode);
+    enable_operating_mode(context_, &DynamixelWorkbench::setCurrentControlMode);
 
     // set reasonable initial command
-    data_->eff_cmd = 0.;
-    prev_eff_cmd_ = std::numeric_limits< double >::quiet_NaN();
-
-    readItems(&data_->additional_cmds);
-    prev_additional_cmds_ = data_->additional_cmds;
+    context_->eff_cmd = 0.;
+    prev_eff_cmd_ = std::numeric_limits<double>::quiet_NaN();
   }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) override {
-    readAllStates();
+  virtual void read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
+    read_all_states(context_);
   }
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) override {
-    if (!std::isnan(data_->eff_cmd) && areNotEqual(data_->eff_cmd, prev_eff_cmd_)) {
-      writeEffortCommand();
-      prev_eff_cmd_ = data_->eff_cmd;
-    }
-
-    // write additional commands only when commands are updated
-    for (const std::map< std::string, std::int32_t >::value_type &cmd : data_->additional_cmds) {
-      std::int32_t &prev_cmd(prev_additional_cmds_[cmd.first]);
-      if (cmd.second != prev_cmd) {
-        writeItem(cmd.first, cmd.second);
-        prev_cmd = cmd.second;
-      }
+  virtual void write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
+    if (!std::isnan(context_->eff_cmd) && !bitwise_equal(context_->eff_cmd, prev_eff_cmd_)) {
+      write_effort_command(context_);
+      prev_eff_cmd_ = context_->eff_cmd;
     }
   }
 
-  virtual void stopping() override { torqueOff(); }
+  virtual void stopping() override { torque_off(context_); }
 
 private:
-  const std::map< std::string, std::int32_t > item_map_;
   double prev_eff_cmd_;
-  std::map< std::string, std::int32_t > prev_additional_cmds_;
 };
 } // namespace layered_hardware_dynamixel
 

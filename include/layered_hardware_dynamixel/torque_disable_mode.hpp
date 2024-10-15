@@ -1,27 +1,29 @@
 #ifndef LAYERED_HARDWARE_DYNAMIXEL_TORQUE_DISABLE_MODE_HPP
 #define LAYERED_HARDWARE_DYNAMIXEL_TORQUE_DISABLE_MODE_HPP
 
-#include <layered_hardware_dynamixel/common_namespaces.hpp>
-#include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
-#include <layered_hardware_dynamixel/operating_mode_base.hpp>
-#include <ros/duration.h>
-#include <ros/time.h>
+#include <memory>
+
+#include <layered_hardware_dynamixel/dynamixel_actuator_context.hpp>
+#include <layered_hardware_dynamixel/dynamixel_workbench_utils.hpp>
+#include <layered_hardware_dynamixel/operating_mode_interface.hpp>
+#include <rclcpp/duration.hpp>
+#include <rclcpp/time.hpp>
 
 namespace layered_hardware_dynamixel {
 
-class TorqueDisableMode : public OperatingModeBase {
+class TorqueDisableMode : public OperatingModeInterface {
 public:
-  TorqueDisableMode(const DynamixelActuatorDataPtr &data)
-      : OperatingModeBase("torque_disable", data) {}
+  TorqueDisableMode(const std::shared_ptr<DynamixelActuatorContext> &context)
+      : OperatingModeInterface("torque_disable", context) {}
 
-  virtual void starting() override { torqueOff(); }
+  virtual void starting() override { torque_off(context_); }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) override {
+  virtual void read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
     // read pos, vel, eff, etc
-    readAllStates();
+    read_all_states(context_);
   }
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) override {
+  virtual void write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
     // nothing to do
   }
 

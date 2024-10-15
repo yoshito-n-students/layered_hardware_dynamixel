@@ -1,30 +1,33 @@
 #ifndef LAYERED_HARDWARE_DYNAMIXEL_REBOOT_MODE_HPP
 #define LAYERED_HARDWARE_DYNAMIXEL_REBOOT_MODE_HPP
 
-#include <layered_hardware_dynamixel/common_namespaces.hpp>
-#include <layered_hardware_dynamixel/dynamixel_actuator_data.hpp>
-#include <layered_hardware_dynamixel/operating_mode_base.hpp>
-#include <ros/console.h>
-#include <ros/duration.h>
-#include <ros/time.h>
+#include <chrono>
+#include <memory>
+
+#include <layered_hardware_dynamixel/dynamixel_actuator_context.hpp>
+#include <layered_hardware_dynamixel/dynamixel_workbench_utils.hpp>
+#include <layered_hardware_dynamixel/operating_mode_interface.hpp>
+#include <rclcpp/duration.hpp>
+#include <rclcpp/time.hpp>
 
 namespace layered_hardware_dynamixel {
 
-class RebootMode : public OperatingModeBase {
+class RebootMode : public OperatingModeInterface {
 public:
-  RebootMode(const DynamixelActuatorDataPtr &data) : OperatingModeBase("reboot", data) {}
+  RebootMode(const std::shared_ptr<DynamixelActuatorContext> &context)
+      : OperatingModeInterface("reboot", context) {}
 
   virtual void starting() override {
-    reboot();
+    reboot(context_);
     // confirm the actuator has been rebooted by ping for certain duration
-    pingFor(ros::Duration(0.5));
+    ping_for(context_, rclcpp::Duration(std::chrono::milliseconds(500)));
   }
 
-  virtual void read(const ros::Time &time, const ros::Duration &period) override {
+  virtual void read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
     // nothing to do
   }
 
-  virtual void write(const ros::Time &time, const ros::Duration &period) override {
+  virtual void write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
     // nothing to do
   }
 
