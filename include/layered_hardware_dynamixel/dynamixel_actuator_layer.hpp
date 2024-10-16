@@ -11,6 +11,7 @@
 #include <dynamixel_workbench_toolbox/dynamixel_workbench.h>
 #include <hardware_interface/handle.hpp> // for hi::{State,Command}Interface
 #include <hardware_interface/hardware_info.hpp>
+#include <hardware_interface/types/hardware_interface_return_values.hpp> // for hi::return_type
 #include <layered_hardware/layer_interface.hpp>
 #include <layered_hardware/merge_utils.hpp>
 #include <layered_hardware/string_registry.hpp>

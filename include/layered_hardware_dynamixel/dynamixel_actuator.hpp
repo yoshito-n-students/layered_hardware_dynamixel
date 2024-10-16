@@ -9,7 +9,8 @@
 #include <string>
 #include <vector>
 
-#include <hardware_interface/handle.hpp>
+#include <hardware_interface/handle.hpp> // for hi::{State,Command}Interface
+#include <hardware_interface/types/hardware_interface_return_values.hpp> // for hi::return_type
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <layered_hardware_dynamixel/clear_multi_turn_mode.hpp>
 #include <layered_hardware_dynamixel/common_namespaces.hpp>
