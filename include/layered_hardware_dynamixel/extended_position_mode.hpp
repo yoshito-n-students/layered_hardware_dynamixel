@@ -4,14 +4,13 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <optional>
 
 #include <layered_hardware_dynamixel/dynamixel_actuator_context.hpp>
 #include <layered_hardware_dynamixel/dynamixel_workbench_utils.hpp>
 #include <layered_hardware_dynamixel/operating_mode_interface.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/time.hpp>
-
-#include <boost/optional.hpp>
 
 namespace layered_hardware_dynamixel {
 
@@ -31,7 +30,7 @@ public:
     context_->vel_cmd = 0.;
     prev_vel_cmd_ = std::numeric_limits<double>::quiet_NaN();
 
-    cached_pos_ = boost::none;
+    cached_pos_ = std::nullopt;
   }
 
   virtual void read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
@@ -58,9 +57,9 @@ public:
       if (!cached_pos_) {
         cached_pos_ = context_->pos;
       }
-      context_->pos_cmd = cached_pos_.get();
+      context_->pos_cmd = cached_pos_.value();
     } else {
-      cached_pos_ = boost::none;
+      cached_pos_ = std::nullopt;
     }
 
     // write goal position if the goal pos or profile velocity have been updated
@@ -77,7 +76,7 @@ public:
 
 private:
   double prev_pos_cmd_, prev_vel_cmd_;
-  boost::optional<double> cached_pos_;
+  std::optional<double> cached_pos_;
 };
 } // namespace layered_hardware_dynamixel
 
