@@ -40,8 +40,8 @@ public:
 
   virtual void write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
     // write profile velocity if updated
-    const bool do_write_vel(!std::isnan(context_->vel_cmd) &&
-                            !bitwise_equal(context_->vel_cmd, prev_vel_cmd_));
+    const bool do_write_vel =
+        (!std::isnan(context_->vel_cmd) && context_->vel_cmd != prev_vel_cmd_);
     if (do_write_vel) {
       write_profile_velocity(context_);
       prev_vel_cmd_ = context_->vel_cmd;
@@ -50,9 +50,9 @@ public:
     // if the profile velocity is 0, the user would want the actuator
     // to stop at the present position but 0 actually means unlimited.
     // to solve this mismatch, freeze the position command on that case.
-    const bool do_freeze_pos(
-        !std::isnan(context_->vel_cmd) &&
-        context_->dxl_wb->convertVelocity2Value(context_->id, context_->vel_cmd) == 0);
+    const bool do_freeze_pos =
+        (!std::isnan(context_->vel_cmd) &&
+         context_->dxl_wb->convertVelocity2Value(context_->id, context_->vel_cmd) == 0);
     if (do_freeze_pos) {
       if (!cached_pos_) {
         cached_pos_ = context_->pos;
@@ -64,8 +64,8 @@ public:
 
     // write goal position if the goal pos or profile velocity have been updated
     // to make the change affect
-    const bool do_write_pos(!std::isnan(context_->pos_cmd) &&
-                            (do_write_vel || !bitwise_equal(context_->pos_cmd, prev_pos_cmd_)));
+    const bool do_write_pos =
+        (!std::isnan(context_->pos_cmd) && (do_write_vel || context_->pos_cmd != prev_pos_cmd_));
     if (do_write_pos) {
       write_position_command(context_);
       prev_pos_cmd_ = context_->pos_cmd;

@@ -32,7 +32,7 @@ public:
   }
 
   virtual void write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
-    if (!std::isnan(context_->vel_cmd) && !bitwise_equal(context_->vel_cmd, prev_vel_cmd_)) {
+    if (!std::isnan(context_->vel_cmd) && context_->vel_cmd != prev_vel_cmd_) {
       write_velocity_command(context_);
       prev_vel_cmd_ = context_->vel_cmd;
     }

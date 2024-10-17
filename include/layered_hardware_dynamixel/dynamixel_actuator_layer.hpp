@@ -75,11 +75,11 @@ public:
       try {
         actuators_.emplace_back(new DynamixelActuator(ator_names[i], ator_params[i], dxl_wb));
       } catch (const std::runtime_error &error) {
-        LHD_ERROR("DynamixelActuatorLayer::init(): Failed to create driver for \"%s\" actuator",
+        LHD_ERROR("DynamixelActuatorLayer::on_init(): Failed to create driver for \"%s\" actuator",
                   ator_names[i].c_str());
         return CallbackReturn::ERROR;
       }
-      LHD_INFO("DynamixelActuatorLayer::init(): Initialized the actuator \"%s\"",
+      LHD_INFO("DynamixelActuatorLayer::on_init(): Initialized the actuator \"%s\"",
                ator_names[i].c_str());
     }
 

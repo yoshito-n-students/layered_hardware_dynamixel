@@ -32,7 +32,7 @@ public:
   }
 
   virtual void write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
-    if (!std::isnan(context_->eff_cmd) && !bitwise_equal(context_->eff_cmd, prev_eff_cmd_)) {
+    if (!std::isnan(context_->eff_cmd) && context_->eff_cmd != prev_eff_cmd_) {
       write_effort_command(context_);
       prev_eff_cmd_ = context_->eff_cmd;
     }

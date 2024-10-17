@@ -36,7 +36,7 @@ public:
   virtual void write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override {
     // write goal position if the goal pos or profile velocity have been updated
     // to make the change affect
-    if (!std::isnan(context_->pos_cmd) && !bitwise_equal(context_->pos_cmd, prev_pos_cmd_)) {
+    if (!std::isnan(context_->pos_cmd) && context_->pos_cmd != prev_pos_cmd_) {
       write_position_command(context_);
       prev_pos_cmd_ = context_->pos_cmd;
     }

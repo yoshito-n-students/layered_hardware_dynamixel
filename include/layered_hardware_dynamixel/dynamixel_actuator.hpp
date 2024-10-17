@@ -2,8 +2,6 @@
 #define LAYERED_HARDWARE_DYNAMIXEL_DYNAMIXEL_ACTUATOR_HPP
 
 #include <cstdint>
-#include <list>
-#include <map>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -12,6 +10,7 @@
 #include <hardware_interface/handle.hpp> // for hi::{State,Command}Interface
 #include <hardware_interface/types/hardware_interface_return_values.hpp> // for hi::return_type
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
+#include <layered_hardware/string_registry.hpp>
 #include <layered_hardware_dynamixel/clear_multi_turn_mode.hpp>
 #include <layered_hardware_dynamixel/common_namespaces.hpp>
 #include <layered_hardware_dynamixel/current_based_position_mode.hpp>
